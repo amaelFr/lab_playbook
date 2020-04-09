@@ -1,0 +1,16 @@
+all:
+  hosts:
+    windowsLab1:
+  children: 
+    win:
+      hosts:
+        windowsLab1:
+    fixedIp:
+      hosts:
+        windowsLab1:
+    AD:
+      hosts:
+        windowsLab1:
+      children:
+        replica:
+        

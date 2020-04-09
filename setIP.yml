@@ -1,0 +1,29 @@
+---
+- hosts: win:fixedIp
+  gather_facts: no
+  pre_tasks:
+    - name: Set temporary ansible host variable
+      set_fact:
+        ansible_host_final: "{{ ansible_host }}"
+        ansible_host: "{{ ansible_host_tmp }}"
+  tasks:
+    - name: Verify host connection
+      win_ping:
+      ignore_unreachable: yes
+    - name: Setting up IP
+      win_static_IP:
+        ip: '{{ ansible_host_final }}'
+        gateway: '{{ connection.gateway }}'
+        currentInterface: true
+      # register: out
+    # - debug:
+    #     var: out
+    - name: Pause for host to setting up connection
+      pause:
+        seconds: 15
+  post_tasks:
+    - name: Set back ansible host variable
+      set_fact:
+        ansible_host: "{{ ansible_host_final }}"
+    - name: Verify host connection post changement
+      win_ping:

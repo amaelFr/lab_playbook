@@ -1,0 +1,53 @@
+#  <-- tasks file can include smaller files if warranted
+---
+# file: roles/common/tasks/main.yml
+
+- name: Uninstall feature if present
+  win_shell: (Uninstall-ADDSDomainController -LocalAdministratorPassword (ConvertTo-SecureString -AsPlainText '{{ ansible_password }}' -Force) -NoRebootOnCompletion -DemoteOperationMasterRole -LastDomainControllerInDomain -RemoveApplicationPartition -Confirm:$false) -and (Restart-Computer -Force)
+  register: out
+  failed_when: 'False'
+  # out.msg.find('Unexpected failure during module execution.') == -1 or not 'Unexpected failure during module execution.' in out.msg
+  changed_when: "out.rc == 0 or 'Unexpected failure during module execution.' in out.msg"
+  # ignore_errors: yes
+- name: debug
+  debug:
+    var: out
+- name: Wait for server to be up after uninstall
+  wait_for_connection:
+    delay: 90
+    timeout: 500
+  when: out|d(False) and ( out.msg|d(False) and 'Unexpected failure during module execution.' in out.msg or out.changed)
+- name: install ad
+  win_feature:
+    name: AD-Domain-Services
+    include_management_tools: yes
+    include_sub_features: yes
+    state: present
+  register: result
+- name: Create new domain in a new forest on the target host
+  win_domain:
+    dns_domain_name: "{{ domain }}"
+    safe_mode_password: "{{ domainPassword if domainPassword|d(False) else ansible_password }}"
+  register: ad0
+- name: Create new domain in a new forest with specific parameters
+  win_domain:
+    create_dns_delegation: no
+    database_path: C:\Windows\NTDS
+    dns_domain_name: "{{ domain }}"
+    domain_mode: Win2012R2
+    domain_netbios_name: ANSIBLE
+    forest_mode: Win2012R2
+    safe_mode_password: password123!
+    sysvol_path: C:\Windows\SYSVOL
+  register: ad1
+- name: reboot server
+  win_reboot:
+    msg: "Installing AD. Rebooting..."
+  when: ad0.changed or ad1.changed
+- name: Wait for server to be up after install
+  wait_for_connection:
+    delay: 300
+    timeout: 500
+  when: ad0.changed or ad1.changed
+- name: ping
+  win_ping:

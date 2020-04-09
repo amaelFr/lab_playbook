@@ -1,0 +1,3 @@
+# - import_playbook: setIP.yml
+- import_playbook: setUpHostname.yml
+- import_playbook: AD.yml

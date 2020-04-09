@@ -1,0 +1,17 @@
+---
+- hosts: win
+  tasks:
+    - name: Change the hostname
+      win_hostname:
+        name: "{{ hostname }}"
+      register: res0
+      when: hostname|d(False)
+    - name: Change the hostname
+      win_hostname:
+        name: "{{ inventory_hostname }}"
+      register: res1
+      when: not hostname|d(False)
+
+    - name: Reboot post change hostname
+      win_reboot:
+      when: res0.reboot_required|d(False) or res1.reboot_required|d(False)

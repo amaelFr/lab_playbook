@@ -1,1 +1,12 @@
 #  <-- tasks file can include smaller files if warranted
+---
+# file: roles/common/tasks/main.yml
+
+
+- name: Default ping windows
+  when: groups['win']|d(False) and inventory_hostname in groups['win']
+  win_ping:
+
+- name: Default ping linux
+  when: groups['win']|d(False) and inventory_hostname in groups['lin']
+  ping:

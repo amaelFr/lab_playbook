@@ -1,0 +1,44 @@
+#  <-- tasks file can include smaller files if warranted
+---
+# file: roles/common/tasks/main.yml
+
+- name: Set temporary ansible host variable
+  set_fact:
+    ansible_host_final: "{{ ansible_host }}"
+    ansible_host: "{{ ansible_host_tmp }}"
+  when: "ansible_host_tmp|d(False)"
+- name: Set Facts
+  setup:
+
+
+- name: Set windows IP
+  block:
+    - name: Set windows IP for the same interface
+      block:
+        - name: Verify host connection
+          win_ping:
+          ignore_unreachable: yes
+        - name: Setting up IP
+          win_static_IP:
+            ip: '{{ ansible_host_final }}'
+            gateway: '{{ connection.gateway }}'
+            currentInterface: true
+          # register: out
+        # - debug:
+        #     var: out
+        - name: Pause for host to setting up connection
+          pause:
+            seconds: 20
+        - name: Set back ansible host variable
+          set_fact:
+            ansible_host: "{{ ansible_host_final }}"
+        - name: Verify host connection post changement
+          win_ping:
+      when: ansible_host_final|d(False)
+    - name: Set Windows IP for another interface
+      win_static_IP:
+        ip: '{{ ansible_host_final }}'
+        gateway: '{{ connection.gateway }}'
+        currentInterface: false
+      when: not ansible_host_final|d(False)
+  when: ansible_facts['os_family'] == 'Windows'

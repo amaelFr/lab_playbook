@@ -1,4 +1,0 @@
----
-- hosts: win:AD
-  roles:
-    - winAD

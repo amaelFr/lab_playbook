@@ -1,3 +1,14 @@
-# - import_playbook: setIP.yml
-- import_playbook: setUpHostname.yml
-- import_playbook: AD.yml
+---
+# - hosts: fixedIp
+#   gather_facts: no
+#   roles:
+#     - fixedIP
+
+- hosts: all
+  roles:
+    - common
+
+- hosts: AD:controller
+  roles:
+    - ADController
+

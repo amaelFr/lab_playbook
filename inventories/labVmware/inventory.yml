@@ -10,7 +10,12 @@ all:
         windowsLab1:
     AD:
       hosts:
-        windowsLab1:
+        # compute1:
       children:
-        replica:
-        
+        controller:
+          children:
+            master:
+              hosts:
+                windowsLab1:
+            replica:
+              hosts:

@@ -1,7 +1,7 @@
 #  <-- tasks file can include smaller files if warranted
 ---
 # file: roles/common/tasks/main.yml
-- name: Set IPS
+- name: Verify IP necessary variables
   fail:
     msg: "Error to set IP you must specify for the same interface ansible_host_tmp or an ip for a children connection"
   loop: "{{ connections }}"

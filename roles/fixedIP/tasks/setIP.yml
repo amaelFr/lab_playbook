@@ -49,7 +49,6 @@
 
 
 
-
 - name: Set back ansible host variable
   block:
     - name: Set back ansible host variable

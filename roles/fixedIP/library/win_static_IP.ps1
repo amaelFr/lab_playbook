@@ -83,11 +83,11 @@ if ( $adapter -eq $null) {
 }
 
 $interface = ( $adapter | Get-NetIPInterface -AddressFamily "IPv4" )
-$dhcp=($interface.Dhcp -eq "Enabled")
+# $dhcp=($interface.Dhcp -eq "Enabled")
 
-if($dhcp){
-  #get ip conf to rollback
-}
+# if($dhcp){
+#   #get ip conf to rollback
+# }
 
 if($cuI){
 

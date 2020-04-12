@@ -1,0 +1,64 @@
+---
+# file: roles/common/tasks/main.yml
+
+- name: Set temporary ansible host variable
+  set_fact:
+    ansible_host_final: "{{ ansible_host }}"
+    ansible_host: "{{ ansible_host_tmp }}"
+  when: not (connection.ip|d(False))
+- name: Set Facts
+  setup:
+
+
+
+- name: Set windows IP
+  block:
+    - name: Set windows IP for the same interface
+      block:
+        - name: Verify host connection
+          win_ping:
+        - name: Setting up IP
+          win_static_IP:
+            interface: "{{ connection.interface|d('Ethernet0') }}"
+            ip: "{{ ansible_host_final }}"
+            gateway: "{{ connection.gateway }}"
+            currentInterface: true
+        - name: Pause for host to setting up connection
+          pause:
+            seconds: 10
+      when: not (connection.ip|d(False))
+    - name: Set Windows IP for another interface
+      win_static_IP:
+        interface: "{{ connection.interface|d('Ethernet0') }}"
+        ip: "{{ connection.ip }}"
+        gateway: "{{ connection.gateway }}"
+        currentInterface: false
+      when: connection.ip|d(False)
+      register: out
+    - name: debug
+      debug:
+        var: out
+      when: connection.ip|d(False)
+
+  when: ansible_facts['os_family'] == 'Windows'
+
+- name: Set not windows IP
+  fail:
+    msg: "Can't set the ip of {{ inventory_hostname }} os family {{ ansible_facts['os_family'] }}"
+  when: ansible_facts['os_family'] != 'Windows'
+
+
+
+
+- name: Set back ansible host variable
+  block:
+    - name: Set back ansible host variable
+      set_fact:
+        ansible_host: "{{ ansible_host_final }}"
+    - name: Verify windows host connection post changement
+      win_ping:
+      when: ansible_facts['os_family'] == 'Windows'
+    - name: Verify host connection post changement
+      ping:
+      when: ansible_facts['os_family'] != 'Windows'
+  when: "not (connection.ip|d(False))"

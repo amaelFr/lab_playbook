@@ -8,7 +8,9 @@
   roles:
     - common
 
-- hosts: AD:controller
+- hosts: AD:&controller
   roles:
     - ADController
+
+- hosts: AD:!controller
 

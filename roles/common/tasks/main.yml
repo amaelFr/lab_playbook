@@ -4,15 +4,13 @@
   block:
     - name: Change the hostname
       win_hostname:
-        name: "{{ hostname }}"
-      register: res0
-      when: hostname|d(False)
-    - name: Change the hostname
-      win_hostname:
-        name: "{{ inventory_hostname }}"
-      register: res1
-      when: not hostname|d(False)
+        name: "{{ hostname|d(inventory_hostname) }}"
+      register: res
     - name: Reboot post change hostname
       win_reboot:
-      when: res0.reboot_required|d(False) or res1.reboot_required|d(False)
+      when: res.reboot_required|d(False)
   when: ansible_facts['os_family'] == 'Windows'
+- name: Change non windows hostname
+  hostname:
+    name: "{{ hostname|d(inventory_hostname) }}"
+  when: ansible_facts['os_family'] != 'Windows'

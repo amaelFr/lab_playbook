@@ -1,21 +1,19 @@
 all:
   hosts:
     windowsLab1:
-  children: 
-    win:
-      hosts:
-        windowsLab1:
+    windowsLab2:
+  children:
     fixedIp:
       hosts:
-        windowsLab1:
+        windowsLab2:
     AD:
       hosts:
-        # compute1:
+        windowsLab2:
       children:
-        controller:
+        domainController:
           children:
-            master:
+            domainMaster:
               hosts:
                 windowsLab1:
-            replica:
+            domainReplica:
               hosts:

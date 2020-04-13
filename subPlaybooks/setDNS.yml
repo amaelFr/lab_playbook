@@ -1,0 +1,11 @@
+- hosts: all:!domainController
+  tasks:
+    - name: Set DNS server for windows hosts
+      win_dns_client:
+        adapter_names: '*'
+        ipv4_addresses: "{{ DNSIP }}"
+      when: ansible_facts['os_family'] == 'Windows'
+    - name: Set DNS server for non windows hosts
+      net_system:
+        name_servers: "{{ DNSIP }}"
+      when: ansible_facts['os_family'] != 'Windows'

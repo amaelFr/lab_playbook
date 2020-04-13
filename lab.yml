@@ -1,16 +1,15 @@
 ---
-# - hosts: fixedIp
-#   gather_facts: no
+# - hosts: all
 #   roles:
-#     - fixedIP
+#     - common
 
-- hosts: all
-  roles:
-    - common
+# - hosts: domainController
+#   roles:
+#     - ADController
 
-- hosts: AD:&controller
-  roles:
-    - ADController
+- import_playbook: subPlaybooks/setDNS.yml
+- import_playbook: subPlaybooks/joinDomain.yml
 
-- hosts: AD:!controller
+# - hosts: AD:!domainController
+
 

@@ -10,6 +10,6 @@
 - import_playbook: subPlaybooks/setDNS.yml
 - import_playbook: subPlaybooks/joinDomain.yml
 
-# - hosts: AD:!domainController
-
-
+- hosts: docker
+  roles:
+    - crivetimihai.virtualization.docker

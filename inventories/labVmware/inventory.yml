@@ -6,6 +6,9 @@ all:
     fixedIp:
       hosts:
         windowsLab2:
+    docker:
+      hosts:
+        
     AD:
       hosts:
         windowsLab2:

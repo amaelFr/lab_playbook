@@ -4,12 +4,12 @@
 - name: Verify IP necessary variables
   fail:
     msg: "Error to set IP you must specify for the same interface ansible_host_tmp or an ip for a children connection"
-  loop: "{{ connections }}"
+  loop: "{{ interfaces }}"
   loop_control:
-    loop_var: connection
-  when: "{{ not (connection.ip|d(False) or ansible_host_tmp|d(False)) }}"
+    loop_var: interface
+  when: "not (interface.ip|d(False) or ansible_host_tmp|d(False))"
 - name: Set IPS
   include: setIP.yml
-  loop: "{{ connections }}"
+  loop: "{{ interfaces }}"
   loop_control:
-    loop_var: connection
+    loop_var: interface

@@ -1,14 +1,18 @@
-ansible_host: 192.168.29.160
+ansible_host: 192.168.29.220
 
 hostname: ADmaster
 
-ansible_host_tmp: 192.168.29.134
-connections:
-# first current interface
-  - interface: Ethernet0
+
+
+ansible_host_tmp: 192.168.29.172
+interfaces:
+  - name: Ethernet0
     gateway: 192.168.29.2
     subnet: 24
-  # - interface: Ethernet1
-  #   ip: 192.168.29.160
-  #   gateway: 192.168.29.2
-  #   subnet: 24
+
+image:
+  type: windows
+  version: 2016
+ressource:
+  ram: 4096
+  cpu: 16

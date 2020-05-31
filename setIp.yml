@@ -2,6 +2,8 @@
 - hosts:
     - fixedIp
     - domainController
+    - CA
+    - firewall
   gather_facts: no
   roles:
     - fixedIP

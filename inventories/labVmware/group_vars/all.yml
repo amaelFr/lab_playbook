@@ -1,3 +1,7 @@
-domain: win.lab
+domain: 
+  name: win.lab
+  admin: Administrator
+  password: V@grant1
+  recoveryPassword: V@grant1
 DNSIP:
-  - 192.168.29.160
+  - 192.168.29.220

@@ -1,7 +1,0 @@
-#  <-- tasks file can include smaller files if warranted
----
-# file: roles/common/tasks/main.yml
-
-- name: Windows AD
-  include: winAD.yml
-  when: ansible_facts['os_family'] == 'Windows'

@@ -1,4 +1,5 @@
 ---
 collections:
   - crivetimihai.virtualization
-  
+  - inverse_inc.windows
+  - pfsensible.core

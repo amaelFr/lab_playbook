@@ -5,7 +5,7 @@
   set_fact:
     ansible_host_final: "{{ ansible_host }}"
     ansible_host: "{{ ansible_host_tmp }}"
-  when: not (connection.ip|d(False))
+  when: not (interface.ip|d(False))
 - name: Set Facts
   setup:
 
@@ -15,37 +15,57 @@
   block:
     - name: Set windows IP for the same interface
       block:
-        - name: Verify host connection
-          win_ping:
         - name: Setting up IP
           win_static_IP:
-            interface: "{{ connection.interface|d('Ethernet0') }}"
+            interface: "{{ interface.name|d('Ethernet0') }}"
             ip: "{{ ansible_host_final }}"
-            gateway: "{{ connection.gateway }}"
+            gateway: "{{ interface.gateway }}"
+            subNet: "{{ interface.subnet|d(24) }}"
             currentInterface: true
-        - name: Pause for host to setting up connection
+          register: out
+        - name: Pause for host to setting up interface
           pause:
             seconds: 10
-      when: not (connection.ip|d(False))
+      when: not (interface.ip|d(False))
     - name: Set Windows IP for another interface
       win_static_IP:
-        interface: "{{ connection.interface|d('Ethernet0') }}"
-        ip: "{{ connection.ip }}"
-        gateway: "{{ connection.gateway }}"
+        interface: "{{ interface.name|d('Ethernet0') }}"
+        ip: "{{ interface.ip }}"
+        gateway: "{{ interface.gateway }}"
+        subNet: "{{ interface.subnet|d(24) }}"
         currentInterface: false
-      when: connection.ip|d(False)
+      when: interface.ip|d(False)
       register: out
-    - name: debug
-      debug:
-        var: out
-      when: connection.ip|d(False)
-
+    # - name: debug
+    #   debug:
+    #     var: out
+    #   when: interface.ip|d(False)
   when: ansible_facts['os_family'] == 'Windows'
+
+- name: set pfsense ip
+  block:
+    - name: Set pfsense ip
+      pfsensible.core.interface:
+        interface: "{{ interface.name }}"
+        ipv4_address: "{{ interface.ip }}"
+        ipv4_gateway: "{{ interface.gateway|d(None) }}"
+        ipv4_prefixlen: "{{ interface.subnet|d(24) }}"
+        ipv4_type: static
+        descr: "{{ interface.zone|d('pfsense_setupIP_{{ interface.name }}') }}"
+        enabled: true
+      when: "{{ not ansible_host_final|d('False') }}"
+    - name: Failed same interface not permitted for pfsense static IP
+      fail:
+        msg: Failed same interface not permitted for pfsense static IP
+      when: "{{ ansible_host_final|d('False') }}"
+  when: ansible_facts['os_family'] == 'FreeBSD' and 'pfSense' in ansible_facts['kernel_version']
+
+
 
 - name: Set not windows IP
   fail:
     msg: "Can't set the ip of {{ inventory_hostname }} os family {{ ansible_facts['os_family'] }}"
-  when: ansible_facts['os_family'] != 'Windows'
+  when: ansible_facts['os_family'] != 'Windows' and 'pfSense' not in ansible_facts['kernel_version']
 
 
 
@@ -54,10 +74,10 @@
     - name: Set back ansible host variable
       set_fact:
         ansible_host: "{{ ansible_host_final }}"
-    - name: Verify windows host connection post changement
+    - name: Verify windows host interface post changement
       win_ping:
       when: ansible_facts['os_family'] == 'Windows'
-    - name: Verify host connection post changement
+    - name: Verify host interface post changement
       ping:
       when: ansible_facts['os_family'] != 'Windows'
-  when: "not (connection.ip|d(False))"
+  when: "not (interface.ip|d(False))"

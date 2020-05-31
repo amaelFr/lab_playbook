@@ -1,15 +1,20 @@
 ---
-# - hosts: all
+# - import_playbook: subPlaybooks/hostname.yml
+# - import_playbook: subPlaybooks/setDNS.yml
+
+# - hosts: AD
 #   roles:
-#     - common
+#     - AD
 
-# - hosts: domainController
+
+# - hosts: AD
 #   roles:
-#     - ADController
+#     - PKI
 
-- import_playbook: subPlaybooks/setDNS.yml
-- import_playbook: subPlaybooks/joinDomain.yml
+# - hosts: docker
+#   roles:
+#     - crivetimihai.virtualization.docker
 
-- hosts: docker
+- hosts: firewall
   roles:
-    - crivetimihai.virtualization.docker
+    - firewall

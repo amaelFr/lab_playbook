@@ -3,20 +3,37 @@ all:
     windowsLab1:
     windowsLab2:
   children:
+    win:
+      hosts:
+        windowsLab1:
+        windowsLab2:
     fixedIp:
       hosts:
-        windowsLab2:
+        # windowsLab2:
     docker:
       hosts:
-        
+    firewall:
+      children:
+        wan_firewall:
+          hosts:
+            pfsense:
+      hosts:
+        # pfsense:
     AD:
       hosts:
-        windowsLab2:
       children:
         domainController:
           children:
             domainMaster:
               hosts:
-                windowsLab1:
+                # windowsLab1:
             domainReplica:
               hosts:
+        CA:
+          hosts:
+            # windowsLab2:
+          children:
+        # subCA:
+        #   hosts:
+        #   children:
+            

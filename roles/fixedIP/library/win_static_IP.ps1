@@ -15,10 +15,11 @@ Function SetIp{
 
   # $ip="192.168.29.160"
   # $subNet=24
-  # $interfaceIndex=2
+  # $interfaceIndex=(Get-NetAdapter | Where-Object { $_.Name -eq "Ethernet0" }).ifIndex
   # $gateway="192.168.29.2"
 
   $dateTime=[datetime]::Now.ToString('HH:mm:ss')
+
   Write-Host "SetIp $dateTime ip:$ip subNet:$subNet interfaceIndex:$interfaceIndex gateway:$gateway" >> C:\TEMP\out.txt
 
   Try{
@@ -95,6 +96,7 @@ if($cuI){
   $T = New-JobTrigger -Once -At $dateTime.AddSeconds(2)
   $O = New-ScheduledJobOption -StartIfOnBattery -RunElevated -WakeToRun
   $dateTimeString=$dateTime.ToString('yyyyMMdd HH mm ss')
+  $module.Result.ip=$ip
   Register-ScheduledJob -Name "Setting up IP at $dateTimeString" -ScheduledJobOption $O -Trigger $T -ScriptBlock ${Function:SetIp} -ArgumentList $ip,$subNet,$adapter.ifIndex,$gateway
 }else{
   Try{

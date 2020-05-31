@@ -1,0 +1,16 @@
+---
+# - name: pfsense
+#   block:
+    
+#   when: ansible_facts['os_family'] == 'FreeBSD' and 'pfSense' in ansible_facts['kernel_version']
+
+- name: Create alias
+  include: setAlias.yml
+  loop: "{{ firewall_alias|d([]) + firewall_group_alias|d([]) + firewall_personal_alias|d([]) }}"
+  loop_control:
+    loop_var: alias
+- name: Create rule
+  include: setRule.yml
+  loop: "{{ firewall_rules|d([]) + firewall_group_rules|d([]) + firewall_personal_rules|d([]) }}"
+  loop_control:
+    loop_var: rule

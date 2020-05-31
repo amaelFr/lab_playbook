@@ -1,0 +1,28 @@
+---
+firewall_alias:
+  - name: private_net
+    type: network
+    values:
+      - 10.0.0.0/8
+      - 172.16.0.0/12
+      - 192.168.0.0/16
+
+firewall_rules:
+  - name: Block private network changes
+    action: block
+    interface: lan
+    ipprotocol: inet46
+    protocol: any
+    source: lan
+    destination: private_net
+    position_after: top
+    state: present
+  - name: Allow external network ressources
+    action: pass
+    interface: lan
+    ipprotocol: inet46
+    protocol: tcp
+    source: lan
+    destination: any
+    position_before: bottom
+    state: present

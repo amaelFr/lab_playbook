@@ -1,0 +1,7 @@
+---
+- name: AD
+  include: AD.yml
+  when: "'domainController' in group_names"
+- name: Join domain
+  include: joinDomain.yml
+  when: "'domainController' not in group_names"

@@ -1,0 +1,59 @@
+---
+- name: Create GPO
+  block:
+    - name: Putting certificate to GPO server non PKI
+      block:
+        - name: Putting certificate
+          win_copy: 
+            src: /tmp/cert.cer
+            dest: C:\TEMP\cert.cer
+        - name: Import certificate
+          win_certificate_store:
+            path: C:\TEMP\cert.cer
+            store_location: LocalMachine
+            store_name: Root
+            state: present
+            file_type: der
+      when: "'PKI' not in group_names"
+    - name: Get thumbprint
+      win_shell: Get-ChildItem Cert:\LocalMachine\Root\ -Recurse | Where-Object { $_.Subject -Like "*-CA*"  } | Sort-Object -Property Subject | Select-Object -Last 1 | ForEach-Object { Write-Host $_.Thumbprint }
+      register: out
+    - fail:
+        msg: Error while getting thumbprint
+      when: out.stdout_lines|length != 1
+    - name: get policy server ID
+      win_shell: (Get-CertificateEnrollmentPolicyServer -Scope All -Context Machine).Id
+      register: ADCS_policy
+    - fail:
+        msg: Error while getting tcertificate policy id
+      when: ADCS_policy.stdout_lines|length != 1
+    - name: Creating GPO
+      win_shell: New-GPO -Name Certificate_deploy -Comment "GPO used to deploy certificate"
+      ignore_errors: yes
+    # - name: Create GPO to propagate certificate
+    #   inverse_inc.windows.win_gpo_reg:
+    #     gpo: Certificate
+    #     path: HKLM\SOFTWARE\Policies\Microsoft\SystemCertificates\Root\Certificates\{{ out.stdout_lines[0] }}
+    #     name: Root_CA
+    #     value: "{{ ADCS_policy.stdout_lines[0] }}"
+    #     type: string
+    - name: Set GPO
+      win_shell: Set-GPRegistryValue -Name 'Certificate' -Key 'HKLM:\SOFTWARE\Microsoft\SystemCertificates\CA\{{ out.stdout_lines[0] }}' -ValueName 'Root_CA' -Value '{{ ADCS_policy.stdout_lines[0] }}' -Type 'string'
+  when: "False and 'domainController' in  group_names"
+- name: Deploy using gpudate
+  win_command: gpupdate /force
+  when: "'AD' not in  group_names"
+- name: Deploy certificate without gpudate
+  block:
+    - name: Putting certificate
+      win_copy: 
+        src: /tmp/cert.cer
+        dest: C:\TEMP\cert.cer
+    - name: Import certificate
+      win_certificate_store:
+        path: C:\TEMP\cert.cer
+        store_location: LocalMachine
+        store_name: Root
+        state: present
+        file_type: der
+  when: " True or 'AD' not in group_names"

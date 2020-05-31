@@ -1,0 +1,34 @@
+# - name: install ADCS
+#   win_feature:
+#     name: 
+#       - AD-Certificate
+#       # - ADCS-Web-Enrollment
+#     include_management_tools: yes
+#     include_sub_features: no
+#     state: present
+# - name: Unconfigure ADCS
+#   win_shell: Uninstall-AdcsCertificationAuthority -Confirm:$false
+# - name: Get whoami information
+#   win_whoami:
+#   register: out
+# - name: out
+#   debug:
+#     var: out
+# - name: Configure ADCS
+#   win_shell: Install-AdcsCertificationAuthority -Confirm:$false -CAType EnterpriseRootCa -Credential $(New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList "{{ domain.name }}\{{ domain.admin }}",$(ConvertTo-SecureString -String "{{ domain.password }}" -AsPlainText -Force))
+- name: Get thumbprint
+  win_shell: Get-ChildItem Cert:\LocalMachine\Root\ -Recurse | Where-Object { $_.Subject -Like "*{{ hostname|d(inventory_hostname) }}-CA*"  } | Sort-Object -Property Subject | Select-Object -Last 1 | ForEach-Object { Write-Host $_.Thumbprint }
+  register: out
+# - fail:
+#     msg: Error while getting thumbprint
+#   when: out.stdout_lines|length != 1
+- name: Export certificate
+  win_certificate_store:
+    path: C:\TEMP\cert.cer
+    store_location: LocalMachine
+    store_name: CertificateAuthority
+    thumbprint: "{{ out.stdout_lines[0] }}"
+    state: exported
+    file_type: der
+- name: Getting certificate
+  fetch: src=C:\TEMP\cert.cer dest=/tmp/cert.cer flat=yes 

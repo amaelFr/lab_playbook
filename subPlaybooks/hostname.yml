@@ -1,0 +1,17 @@
+---
+- hosts: all
+  tasks:
+    - name: Change windows hostname
+      block:
+        - name: Change the hostname
+          win_hostname:
+            name: "{{ hostname|d(inventory_hostname) }}"
+          register: res
+        - name: Reboot post change hostname
+          win_reboot:
+          when: res.reboot_required|d(False)
+      when: ansible_facts['os_family'] == 'Windows'
+    - name: Change non windows hostname
+      hostname:
+        name: "{{ hostname|d(inventory_hostname) }}"
+      when: ansible_facts['os_family'] != 'Windows'

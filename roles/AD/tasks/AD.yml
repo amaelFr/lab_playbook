@@ -1,0 +1,4 @@
+---
+- name: Windows AD
+  include: winAD.yml
+  when: ansible_facts['os_family'] == 'Windows'

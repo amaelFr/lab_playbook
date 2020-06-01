@@ -1,12 +1,8 @@
 ---
+# firewall_group_alias:
+firewall_group_nats:
+  - name: LAN nat
+    interface: wan    
+    source: enterprise_lan_network
+    destination: any
 # firewall_group_rules:
-#   - name: 'Allow Internal HTTPS traffic'
-#     action: pass
-#     interface: lan
-#     ipprotocol: inet
-#     protocol: udp
-#     source: dns_int
-#     destination: any
-#     destination_port: 53
-#     after: 'Allow proxies out'
-#     state: present

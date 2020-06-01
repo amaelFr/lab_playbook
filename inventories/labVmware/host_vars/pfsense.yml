@@ -8,6 +8,7 @@ hostname: pfsense
 
 # firewall_personal_alias:
 # firewall_personal_rules:
+# firewall_personal_nats:
 
 interfaces:
   - name: em2

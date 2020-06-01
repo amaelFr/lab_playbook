@@ -22,7 +22,6 @@
             gateway: "{{ interface.gateway }}"
             subNet: "{{ interface.subnet|d(24) }}"
             currentInterface: true
-          register: out
         - name: Pause for host to setting up interface
           pause:
             seconds: 10
@@ -35,11 +34,6 @@
         subNet: "{{ interface.subnet|d(24) }}"
         currentInterface: false
       when: interface.ip|d(False)
-      register: out
-    # - name: debug
-    #   debug:
-    #     var: out
-    #   when: interface.ip|d(False)
   when: ansible_facts['os_family'] == 'Windows'
 
 - name: set pfsense ip
@@ -52,12 +46,12 @@
         ipv4_prefixlen: "{{ interface.subnet|d(24) }}"
         ipv4_type: static
         descr: "{{ interface.zone|d('pfsense_setupIP_{{ interface.name }}') }}"
-        enabled: true
-      when: "{{ not ansible_host_final|d('False') }}"
+        enable: true
+      when: not ansible_host_final|d(False)
     - name: Failed same interface not permitted for pfsense static IP
       fail:
         msg: Failed same interface not permitted for pfsense static IP
-      when: "{{ ansible_host_final|d('False') }}"
+      when: ansible_host_final|d(False)
   when: ansible_facts['os_family'] == 'FreeBSD' and 'pfSense' in ansible_facts['kernel_version']
 
 

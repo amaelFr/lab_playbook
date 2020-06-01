@@ -11,4 +11,6 @@
     destination_port: "{{ rule.destination_port|d(None) }}"
     after: "{{ rule.position_after|d(None) }}"
     before: "{{ rule.position_before|d(None) }}"
+    log: "{{ rule.log|d(True) }}"
+    disabled: "{{ not rule.enabled|d(True) }}"
     state: present

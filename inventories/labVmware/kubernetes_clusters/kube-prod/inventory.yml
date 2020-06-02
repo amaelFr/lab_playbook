@@ -19,7 +19,7 @@ all:
         kub-prod-master:
     k8s-cluster:
       hosts:
-        kub-prod:
+        # kub-prod:
     calico-rr:
       hosts:
     vault:

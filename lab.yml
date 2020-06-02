@@ -1,5 +1,5 @@
 ---
-# - import_playbook: subPlaybooks/hostname.yml
+# - import_playbook: subPlaybook/hostname.yml
 
 - hosts: firewall
   roles:
@@ -9,7 +9,7 @@
 #   roles:
 #     - AD
 
-# - import_playbook: subPlaybooks/setDNS.yml
+# - import_playbook: subPlaybook/setDNS.yml
 
 # - hosts: AD
 #   roles:
@@ -18,3 +18,5 @@
 # - hosts: docker
 #   roles:
 #     - crivetimihai.virtualization.docker
+
+- import_playbook: subPlaybook/kubernetes.yml

@@ -3,6 +3,10 @@ all:
     kub-prod-master:
     kub-prod-1:
   children:
+    linux:
+      hosts:
+        kub-prod-master:
+        kub-prod-1:
     kube-master:
       hosts:
         kub-prod-master:

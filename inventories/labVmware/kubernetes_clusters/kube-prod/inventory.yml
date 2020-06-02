@@ -1,0 +1,23 @@
+all:
+  hosts:
+    kub-prod-master:
+    kub-prod-1:
+  children:
+    kube-master:
+      hosts:
+        kub-prod-master:
+    kube-node:
+      hosts:
+        kub-prod-master:
+        kub-prod-1:
+    etcd:
+      hosts:
+        kub-prod-master:
+    k8s-cluster:
+      hosts:
+        kub-prod:
+    calico-rr:
+      hosts:
+    vault:
+      hosts:
+        kub-prod-master:

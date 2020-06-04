@@ -3,3 +3,5 @@ collections:
   - crivetimihai.virtualization
   - inverse_inc.windows
   - pfsensible.core
+  - gantsign.kompose
+  - ansible-galaxy install linux-system-roles.network

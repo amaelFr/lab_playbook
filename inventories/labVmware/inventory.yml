@@ -1,14 +1,18 @@
 all:
   hosts:
-    windowsLab1:
-    windowsLab2:
+    # windowsLab1:
+    # windowsLab2:
   children:
     win:
       hosts:
-        windowsLab1:
-        windowsLab2:
+        # windowsLab1:
+        # windowsLab2:
+    linux:
+      hosts:
+        centosTest:
     fixedIp:
       hosts:
+        centosTest:
         # windowsLab2:
     docker:
       hosts:
@@ -16,7 +20,7 @@ all:
       children:
         wan_firewall:
           hosts:
-            pfsense:
+            # pfsense:
       hosts:
         # pfsense:
     AD:

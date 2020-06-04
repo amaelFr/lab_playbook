@@ -3,6 +3,10 @@
 usage(){
 echo " -h|-s -n (-i -w)"
 echo "-h                    help"
+echo "-i                    enventory source"
+echo "-p                    path to kubernetes inventory"
+echo "-n                    name of kubernetes inventory"
+echo "-k                    kubspray path"
 }
 
 INV="inventory"
@@ -10,13 +14,14 @@ PATHKUBE='./'
 NAME='kube-clu'
 
 # while getopts "hvcts:n:i:" OPTION; do
-while getopts "hp:i:n:" OPTION; do
+while getopts "hk:p:i:n:" OPTION; do
     case "${OPTION}"
     in
         h)          HELP="1";;
         i)          INV=${OPTARG};;
         p)          PATHKUBE=${OPTARG};;
         n)          NAME=${OPTARG};;
+        k)          KUBESPRAY=${OPTARG};;
         ?)          usage >&2
                     exit 1;;
     esac
@@ -54,8 +59,9 @@ fi
 RELATIVEPATHKUBE=$(realpath --relative-to="$PATHKUBE/$NAME" "$INV/")
 
 ( cd $PATHKUBE/$NAME && \
-ln -s $RELATIVEPATHKUBE/group_vars group_vars && \
+# mkdir group_vars && \
 ln -s $RELATIVEPATHKUBE/host_vars host_vars )
+# ln -s $RELATIVEPATHKUBE/group_vars group_vars && \
 
 echo "all:
   hosts:
@@ -66,9 +72,31 @@ echo "all:
       hosts:
     etcd:
       hosts:
-    k8s-cluster:
-      hosts:
     calico-rr:
       hosts:
+    k8s-cluster:
+      children:
+        kube-master:
+        kube-node:
+        calico-rr:
     vault:
       hosts:" >> $PATHKUBE/$NAME/inventory.yml
+
+GROUPVARS=0
+
+if [[ ! -z $KUBESPRAY ]]; then
+  if [[ -d $KUBESPRAY ]]; then
+    if [[ -d "$KUBESPRAY/inventory" ]]; then
+      if [[ -d "$KUBESPRAY/inventory/sample" ]]; then
+        if [[ -d "$KUBESPRAY/inventory/sample/group_vars" ]]; then
+          cp -r "$KUBESPRAY/inventory/sample/group_vars" $PATHKUBE/$NAME/group_vars
+          GROUPVARS=1
+        fi
+      fi
+    fi
+  fi
+fi
+
+if [[ "$GROUPVARS" -eq "0" ]]; then
+  echo "You will have to copy sample group_vars"
+fi

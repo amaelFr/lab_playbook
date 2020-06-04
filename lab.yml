@@ -18,5 +18,3 @@
 # - hosts: docker
 #   roles:
 #     - crivetimihai.virtualization.docker
-
-- import_playbook: subPlaybook/kubernetes.yml

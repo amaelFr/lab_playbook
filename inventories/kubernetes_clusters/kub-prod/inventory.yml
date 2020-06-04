@@ -1,12 +1,6 @@
 all:
   hosts:
-    kub-prod-master:
-    kub-prod-1:
   children:
-    linux:
-      hosts:
-        kub-prod-master:
-        kub-prod-1:
     kube-master:
       hosts:
         kub-prod-master:
@@ -17,11 +11,12 @@ all:
     etcd:
       hosts:
         kub-prod-master:
-    k8s-cluster:
-      hosts:
-        # kub-prod:
     calico-rr:
       hosts:
+    k8s-cluster:
+      children:
+        kube-master:
+        kube-node:
+        calico-rr:
     vault:
       hosts:
-        kub-prod-master:

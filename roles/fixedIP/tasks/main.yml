@@ -3,13 +3,14 @@
 # file: roles/common/tasks/main.yml
 - name: Verify IP necessary variables
   fail:
-    msg: "Error to set IP you must specify for the same interface ansible_host_tmp or an ip for a children connection"
+    msg: Error to set IP you must specify for the same interface ansible_host_tmp or an ip for a children connection
   loop: "{{ interfaces }}"
   loop_control:
     loop_var: interface
-  when: "not (interface.ip|d(False) or ansible_host_tmp|d(False))"
+  when: interface|d(False) and ( not (interface.ip|d(False) or ansible_host_tmp|d(False)))
 - name: Set IPS
   include: setIP.yml
   loop: "{{ interfaces }}"
   loop_control:
     loop_var: interface
+  when: interface|d(False)

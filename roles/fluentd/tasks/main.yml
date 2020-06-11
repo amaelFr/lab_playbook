@@ -1,0 +1,38 @@
+#  <-- tasks file can include smaller files if warranted
+---
+# file: roles/common/tasks/main.yml
+
+- name: linux block
+  block:
+    - name: redhat | Centos
+      shell: curl -L https://toolbelt.treasuredata.com/sh/install-redhat-td-agent3.sh | sh
+      when: ansible_facts['os_family'] == 'RedHat' or ansible_facts['os_family'] == 'CentOS'
+    - name: ubuntu
+      block:
+        - name: ubuntu16
+          shell: curl -L https://toolbelt.treasuredata.com/sh/install-ubuntu-xenial-td-agent3.sh | sh
+          when: ansible_distribution_version == "16.04"
+        - name: ubuntu18
+          shell: curl -L https://toolbelt.treasuredata.com/sh/install-ubuntu-bionic-td-agent3.sh | sh
+          when: ansible_distribution_version == "18.04" or ansible_distribution_version == "20.04"
+        # - name: ubuntu20
+        #   when: ansible_distribution_version == "20.04"
+      when: ansible_facts['os_family'] == 'Ubuntu'
+    - name: debian
+      block:
+        - name: debian9
+          shell: curl -L https://toolbelt.treasuredata.com/sh/install-debian-stretch-td-agent3.sh | sh
+          when: ansible_distribution_version == "9"
+        - name: debian10
+          shell: curl -L https://toolbelt.treasuredata.com/sh/install-debian-buster-td-agent3.sh | sh
+          when: ansible_distribution_version == "10"
+      when: ansible_facts['os_family'] == 'Ubuntu' or ansible_facts['os_family'] == 'Debian'
+  when: ansible_facts['os_family'] != 'Windows'
+- name: windows installation
+  win_fluentd_install:
+    version: 3.7.1-0
+  register: out
+  when: ansible_facts['os_family'] == 'Windows'
+# - name: debug
+#   debug:
+#     var: out

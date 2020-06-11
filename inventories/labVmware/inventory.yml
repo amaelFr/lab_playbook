@@ -3,8 +3,12 @@ all:
     # windowsLab1:
     # windowsLab2:
   children:
+    logging:
+      hosts:
+        windowsLogging:
     win:
       hosts:
+        windowsLogging:
         # windowsLab1:
         # windowsLab2:
     linux:
@@ -16,6 +20,7 @@ all:
         # windowsLab2:
     docker:
       hosts:
+        
     firewall:
       children:
         wan_firewall:

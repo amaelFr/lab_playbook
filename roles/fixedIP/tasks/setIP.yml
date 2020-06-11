@@ -60,11 +60,22 @@
   block:
     - name: non RedHat distro
       block:
+        # - name: install needed network manager libs
+        #   package:
+        #     name:
+        #       - NetworkManager-libnm
+        #       - nm-connection-editor
+        #     state: present
+        # - name: install needed network manager libs
+        #   apt:
+        #     name: python-gi
+        #     state: present
         - name: install needed network manager libs
           package:
             name:
-              - NetworkManager-libnm
-              - nm-connection-editor
+              - python3-dbus
+              - network-manager
+              - libnm-glib-dev
             state: present
         - name: Set IP for linux
           nmcli:
@@ -90,7 +101,7 @@
               gateway4: "{{ interface.gateway|d('0.0.0.0') }}"
               address:
                 - "{{ interface.ip|d(ansible_host_final) }}/{{ interface.subnet|d(24) }}"
-      when: ansible_facts['os_family'] == 'RedHat'
+      when: ansible_facts['os_family'] == 'RedHat' or ansible_facts['os_family'] == 'CentOS'
     # - name: Restart network
     #   shell: systemctl restart network
     - name: restart systemd-networkd

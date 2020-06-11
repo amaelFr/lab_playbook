@@ -1,11 +1,11 @@
 ansible_host: 192.168.29.170
 
-ansible_host_tmp: 192.168.29.139
+ansible_host_tmp: 192.168.29.142
 
 interfaces:
   - name: ens33
     gateway: 192.168.29.2
     subnet: 24
-  - name: ens37
-    ip: 192.168.10.12
-    subnet: 24
+  # - name: ens38
+  #   ip: 192.168.10.12
+  #   subnet: 24

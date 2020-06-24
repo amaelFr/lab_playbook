@@ -1,27 +1,68 @@
 ---
-- name: pfsense
+
+- name: PrepareAlias variable
+  block:
+    - set_fact:
+        firewall_rules_to_set: "{{ aliases }}"
+      when: aliases[0] is mapping
+    - set_fact:
+        firewall_rules_to_set: "{{ firewall_aliases_to_set|d([]) + lookup('vars', alias)|d([]) }}"
+      loop: "{{ aliases  }}"
+      loop_control:
+        loop_var: alias
+      when: aliases[0] is string
+  when: aliases|d([])|length>0
+
+- name: PrepareNAT variable
+  block:
+    - set_fact:
+        firewall_rules_to_set: "{{ NATs }}"
+      when: NATs[0] is mapping
+    - set_fact:
+        firewall_rules_to_set: "{{ firewall_NATs_to_set|d([]) + lookup('vars', nat)|d([]) }}"
+      loop: "{{ NATs  }}"
+      loop_control:
+        loop_var: rule
+      when: NATs[0] is string
+  when: NATs|d([])|length>0
+
+- name: PrepareRule variable
+  block:
+    - set_fact:
+        firewall_rules_to_set: "{{ rules }}"
+      when: rules[0] is mapping
+    - set_fact:
+        firewall_rules_to_set: "{{ firewall_rules_to_set|d([]) + lookup('vars', rule)|d([]) }}"
+      loop: "{{ rules  }}"
+      loop_control:
+        loop_var: rule
+      when: rules[0] is string
+  when: rules|d([])|length>0
+
+- name: pfsense configuration
   block:
     - name: "Delete NAT outbound traffic rule"
       pfsensible.core.nat_outbound:
         descr: 'NAT outbound traffic'
         state: absent
-    - name: Create alias
-      include: setAlias.yml
-      loop: "{{ firewall_alias|d([]) + firewall_group_alias|d([]) + firewall_personal_alias|d([]) }}"
+    - name: Create Pfsense alias
+      include: setpfsenseAlias.yml
+      loop: "{{ firewall_aliases_to_set }}"
       loop_control:
         loop_var: alias
-    - name: Create nat
-      include: setNat.yml
-      loop: "{{ firewall_nats|d([]) + firewall_group_nats|d([]) + firewall_personal_nats|d([]) }}"
+    - name: Create pfsense NATs
+      include: setPfsenseNat.yml
+      loop: "{{ firewall_NATs_to_set }}"
       loop_control:
         loop_var: nat
-    - name: Create rule
-      include: setRule.yml
-      loop: "{{ firewall_rules|d([]) + firewall_group_rules|d([]) + firewall_personal_rules|d([]) }}"
+    - name: Create pfsense rules
+      include: setPfsenseRule.yml
+      loop: "{{ firewall_rules_to_set }}"
       loop_control:
         loop_var: rule
+      when: "{{ firewall_rules_to_set|d(False) }}"
   when: ansible_facts['os_family'] == 'FreeBSD' and 'pfSense' in ansible_facts['kernel_version']
-- name: Not firewall take into account
+- name: Firewall not take into account
   fail:
     msg: That's kind of firewall is not configurable whrite now
   when: ansible_facts['os_family'] != 'FreeBSD' or 'pfSense' not in ansible_facts['kernel_version']

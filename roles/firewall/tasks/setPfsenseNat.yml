@@ -1,0 +1,9 @@
+---
+- name: Set UP nat 
+  pfsensible.core.nat_outbound:
+    descr: ansible NAT {{ nat.name|d(nat.interface+"_"+nat.destination) }}
+    interface: '{{ nat.interface }}'
+    source: '{{ nat.source }}'
+    destination: '{{ nat.destination }}'
+    ipprotocol: "{{ rule.ip|d('inet46') }}"
+    state: present

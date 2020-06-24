@@ -10,6 +10,11 @@ all:
       hosts:
     fixedIp:
       hosts:
+      children:
+        # The following children are not required (obviously done)
+        # CA:
+        # domainController:
+        # firewall:
     docker:
       hosts:
         docker_dmz:

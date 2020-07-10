@@ -1,6 +1,0 @@
-- name: Add adservers alias
-  pfsensible.core.alias:
-    name: "{{ alias.name }}"
-    type: "{{ alias.type }}"
-    address:  "{{ alias['values'] | join(' ') }}"
-    state: present

@@ -12,6 +12,12 @@
           when: res.reboot_required|d(False)
       when: ansible_facts['os_family'] == 'Windows'
     - name: Change non windows hostname
-      hostname:
-        name: "{{ hostname|d(inventory_hostname) }}"
+      block:
+        - name: Change hostname
+          hostname:
+            name: "{{ hostname|d(inventory_hostname) }}"
+          register: res
+        - name: Reboot post change hostname
+          reboot:
+          when: res.reboot_required|d(False)
       when: ansible_facts['os_family'] != 'Windows'

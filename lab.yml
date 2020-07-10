@@ -4,6 +4,7 @@
 - hosts: firewall
   roles:
     - firewall
+  gather_facts: no
 
 # - hosts: AD
 #   roles:
@@ -17,8 +18,8 @@
 
 # - hosts: docker
 #   roles:
-#     - crivetimihai.virtualization.docker
-#     - andrewrothstein.docker-compose
+#     - role: crivetimihai.virtualization.docker
+    # - andrewrothstein.docker-compose
 
 # - hosts: logging
 #   roles:

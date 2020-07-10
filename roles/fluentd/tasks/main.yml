@@ -4,29 +4,67 @@
 
 - name: linux block
   block:
+    - name: debug
+      debug:
+        var: ansible_facts['distribution']
     - name: redhat | Centos
-      shell: curl -L https://toolbelt.treasuredata.com/sh/install-redhat-td-agent3.sh | sh
+      get_url:
+        url: https://toolbelt.treasuredata.com/sh/install-redhat-td-agent3.sh
+        dest: /tmp/td-agent.sh
       when: ansible_facts['os_family'] == 'RedHat' or ansible_facts['os_family'] == 'CentOS'
     - name: ubuntu
       block:
         - name: ubuntu16
-          shell: curl -L https://toolbelt.treasuredata.com/sh/install-ubuntu-xenial-td-agent3.sh | sh
+          get_url:
+            url: https://toolbelt.treasuredata.com/sh/install-ubuntu-xenial-td-agent3.sh
+            dest: /tmp/td-agent.sh
           when: ansible_distribution_version == "16.04"
         - name: ubuntu18
-          shell: curl -L https://toolbelt.treasuredata.com/sh/install-ubuntu-bionic-td-agent3.sh | sh
+          get_url:
+            url: https://toolbelt.treasuredata.com/sh/install-ubuntu-bionic-td-agent3.sh
+            dest: /tmp/td-agent.sh
           when: ansible_distribution_version == "18.04" or ansible_distribution_version == "20.04"
         # - name: ubuntu20
         #   when: ansible_distribution_version == "20.04"
-      when: ansible_facts['os_family'] == 'Ubuntu'
+      when: ansible_facts['distribution'] == 'Ubuntu'
     - name: debian
       block:
         - name: debian9
-          shell: curl -L https://toolbelt.treasuredata.com/sh/install-debian-stretch-td-agent3.sh | sh
+          get_url:
+            url: https://toolbelt.treasuredata.com/sh/install-debian-stretch-td-agent3.sh
+            dest: /tmp/td-agent.sh
           when: ansible_distribution_version == "9"
         - name: debian10
-          shell: curl -L https://toolbelt.treasuredata.com/sh/install-debian-buster-td-agent3.sh | sh
+          get_url:
+            url: https://toolbelt.treasuredata.com/sh/install-debian-buster-td-agent3.sh
+            dest: /tmp/td-agent.sh
           when: ansible_distribution_version == "10"
-      when: ansible_facts['os_family'] == 'Ubuntu' or ansible_facts['os_family'] == 'Debian'
+      when: ansible_facts['distribution'] == 'Debian'
+    - name: Install fluentd
+      shell: sh /tmp/td-agent.sh
+      register: out
+      become: yes
+      become_user: root
+    # - name: redo install
+    #   block:
+    #     - name: sleep
+    #       pause:
+    #         seconds: 40
+    #     - name: Install fluentd
+    #       shell: sh /tmp/td-agent.sh
+    #       register: out
+    #       become: yes
+    #       become_user: root
+    #   when: "'Installation incompleted. Check above messages.' in out.stdout_lines"
+    # - name: debug
+    #   debug:
+    #     var: out
+    - name: fail installation
+      fail:
+        msg: Error while installing fluentd
+      when: "'Installation incompleted. Check above messages.' in out.stdout_lines|d(False)"
+    - name: Remove fluentd install fluentd
+      shell: rm /tmp/td-agent.sh
   when: ansible_facts['os_family'] != 'Windows'
 - name: windows installation
   win_fluentd_install:

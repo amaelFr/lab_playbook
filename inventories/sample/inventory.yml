@@ -1,33 +1,30 @@
 all:
   hosts:
-    # windowsLab1:
-    # windowsLab2:
   children:
     logging:
       hosts:
-        windowsLogging:
     win:
       hosts:
-        windowsLogging:
-        windowsLab1:
-        windowsLab2:
+        AD_master:
     linux:
       hosts:
-        # centosTest:
     fixedIp:
       hosts:
-        # centosTest:
-        windowsLab2:
+      children:
+        # The following children are not required (obviously done)
+        # CA:
+        # domainController:
+        # firewall:
     docker:
       hosts:
-        
+        docker_dmz:
+        docker_service:
     firewall:
       children:
         wan_firewall:
+        lan_firewall:
           hosts:
-            # pfsense:
       hosts:
-        # pfsense:
     AD:
       hosts:
       children:
@@ -35,14 +32,14 @@ all:
           children:
             domainMaster:
               hosts:
-                # windowsLab1:
+                AD_master:
             domainReplica:
               hosts:
+                # TODO replication
         CA:
           hosts:
-            # windowsLab2:
+            # ad_pki:
           children:
-        # subCA:
-        #   hosts:
-        #   children:
-            
+    rootCert:
+      hosts:
+        # TODO share certificate to machine not in the AD

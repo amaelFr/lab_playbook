@@ -2,7 +2,7 @@ ansible_host: 192.168.29.133
 
 hostname: winTest
 
-ansible_host_tmp: 192.168.29.133
+ansible_host_tmp: 192.168.29.172
 interfaces:
 # first current interface
   - name: Ethernet0

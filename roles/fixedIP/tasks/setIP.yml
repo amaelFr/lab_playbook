@@ -18,23 +18,36 @@
     currentInterface: "{{ not (interface.ip|d(False)) }}"
   when: ansible_facts['os_family'] == 'Windows'
 
-# - name: set pfsense ip
-#   block:
-#     - name: Set pfsense ip
-#       pfsensible.core.interface:
-#         interface: "{{ interface.name }}"
-#         ipv4_address: "{{ interface.ip }}"
-#         ipv4_gateway: "{{ interface.gateway|d(None) }}"
-#         ipv4_prefixlen: "{{ interface.subnet|d(24) }}"
-#         ipv4_type: static
-#         descr: "{{ interface.zone|d('pfsense_setupIP_{{ interface.name }}') }}"
-#         enable: true
-#       when: not ansible_host_final|d(False)
-#     - name: Failed same interface not permitted for pfsense static IP
-#       fail:
-#         msg: Failed same interface not permitted for pfsense static IP
-#       when: ansible_host_final|d(False)
-#   when: ansible_facts['os_family'] == 'FreeBSD' and 'pfSense' in ansible_facts['kernel_version']
+- name: set pfsense ip
+  block:
+    - name: Failed same interface not permitted for pfsense static IP
+      fail:
+        msg: Failed same interface not permitted for pfsense static IP
+      when: ansible_host_final|d(False)
+    - name: Set pfsense ip
+      pfsensible.core.interface:
+        interface: "{{ interface.name }}"
+        ipv4_address: "{{ interface.ip }}"
+        ipv4_prefixlen: "{{ interface.subnet|d(24) }}"
+        ipv4_type: static
+        descr: "{{ interface.interface|d('pfsense_setupIP_{{ interface.name }}') }}"
+        enable: true
+    - name: Add gateway
+      pfsensible.core.gateway:
+        name: "{{ interface.interface }}_GW"
+        interface: "{{ interface.interface }}"
+        gateway: "{{ interface.gateway }}"
+        state: present
+    - name: Set pfsense ip
+      pfsensible.core.interface:
+        interface: "{{ interface.name }}"
+        ipv4_address: "{{ interface.ip }}"
+        ipv4_gateway: "{{ interface.interface+'_GW' if interface.gateway|d(False) }}"
+        ipv4_prefixlen: "{{ interface.subnet|d(24) }}"
+        ipv4_type: static
+        descr: "{{ interface.interface|d('pfsense_setupIP_{{ interface.name }}') }}"
+        enable: true
+  when: ansible_facts['os_family'] == 'FreeBSD' and 'pfSense' in ansible_facts['kernel_version']
 
 
 
@@ -125,6 +138,6 @@
         delay: 10
         state: started
       register: wait_result
-      when: ansible_facts['os_family'] == 'Windows'
+      # when: ansible_facts['os_family'] == 'Windows'
   when: not interface.ip|d(False)
 

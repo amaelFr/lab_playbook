@@ -23,6 +23,8 @@ all:
       children:
         wan_firewall:
         lan_firewall:
+        opnsense:
+        pfsense:
           hosts:
       hosts:
     AD:

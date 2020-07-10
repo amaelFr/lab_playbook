@@ -1,48 +1,44 @@
 all:
   hosts:
-    # windowsLab1:
-    # windowsLab2:
   children:
     logging:
       hosts:
-        windowsLogging:
     win:
       hosts:
-        windowsLogging:
-        windowsLab1:
-        windowsLab2:
+        # file_share:
+        # win_client:
+        # ad_pki:
     linux:
       hosts:
-        # centosTest:
+        # docker_dmz:
+        # docker_service:
     fixedIp:
       hosts:
-        # centosTest:
-        windowsLab2:
     docker:
       hosts:
-        
+        docker_dmz:
+        docker_service:
     firewall:
       children:
+
         wan_firewall:
           hosts:
-            # pfsense:
       hosts:
-        # pfsense:
+        pfsenseWan:
     AD:
       hosts:
+        # file_share:
+        # win_client:
       children:
         domainController:
           children:
             domainMaster:
               hosts:
-                # windowsLab1:
+                # ad_pki:
             domainReplica:
               hosts:
         CA:
           hosts:
-            # windowsLab2:
+            # ad_pki:
           children:
-        # subCA:
-        #   hosts:
-        #   children:
             

@@ -13,28 +13,25 @@ Function SetIp{
     [string]$gateway
   )
 
-  # $ip="192.168.29.160"
-  # $subNet=24
-  # $interfaceIndex=(Get-NetAdapter | Where-Object { $_.Name -eq "Ethernet0" }).ifIndex
-  # $gateway="192.168.29.2"
-
-  $dateTime=[datetime]::Now.ToString('HH:mm:ss')
-
-  Write-Host "SetIp $dateTime ip:$ip subNet:$subNet interfaceIndex:$interfaceIndex gateway:$gateway" >> C:\TEMP\out.txt
+  $interface = Get-NetAdapter -ifIndex $interfaceIndex
 
   Try{
+    Try{
+      Remove-NetRoute -InterfaceIndex $interfaceIndex  -Confirm:$false
+    }Catch{}
     Remove-NetIPAddress -InterfaceIndex $interfaceIndex -Confirm:$false
-    if ( $gateway -eq $null -or $gateway -eq "" ){
+    if ( $gateway -eq "0.0.0.0" ){
       New-NetIPAddress -InterfaceIndex $interfaceIndex -IPAddress $ip -PrefixLength $subNet -Confirm:$false
     }else{
-      Try{
-        Remove-NetRoute -InterfaceIndex $interfaceIndex  -Confirm:$false
-      }Catch{}
-      New-NetIPAddress -InterfaceIndex $interfaceIndex -IPAddress $ip -DefaultGateway $gateway -PrefixLength $subNet -Confirm:$false
+      New-NetIPAddress -InterfaceIndex $interfaceIndex -IPAddress $ip -PrefixLength $subNet -DefaultGateway $gateway -Confirm:$false
     }
   }Catch{
+    Write-Host "$_" 2>&1 >> 'C:\TEMP\out.txt'
     Throw $_
   }
+
+  $dateTime=[datetime]::Now.ToString('HH:mm:ss')
+  Write-Host "SetIp $dateTime ip:$ip subNet:$subNet interfaceIndex:" + (Get-NetAdapter -ifIndex $interfaceIndex).ifAlias + " gateway:$gateway" 2>&1 >> 'C:\TEMP\out.txt'
 }
 
 function RaiseError {
@@ -53,7 +50,7 @@ $spec = @{
         ip = @{ type = "str"; required = $true }
         interface = @{ type = "str"; default = "Ethernet0" }
         subNet = @{ type = "int"; default = 24; choices = 0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32 }
-        gateway = @{ type = "str"; }
+        gateway = @{ type = "str"; default = "0.0.0.0" }
         currentInterface = @{ type = "bool"; default = $false }
     }
 }
@@ -67,13 +64,15 @@ $gateway = $module.Params.gateway
 $cuI = $module.Params.currentInterface
 $module.Result.changed = $false
 
+# RaiseError "$gateway"
+
 $ipv4Regex='^(((25[012345])|(2[01234][0-9])|[01]?[0-9]?[0-9])\.){3}((25[012345])|(2[01234][0-9])|[01]?[0-9]?[0-9])$'
 
 if ( -not ($ip -match $ipv4Regex)) {
   RaiseError "Error parameter ip:$ip is not an ipv4"
 }
 
-if ( ! ($gateway -eq $null -or $gateway -match $ipv4Regex)) {
+if ( ! ($gateway -eq "0.0.0.0" -or $gateway -match $ipv4Regex)) {
   RaiseError "Error parameter gateway:$gateway is not an ipv4"
 }
 
@@ -96,8 +95,7 @@ if($cuI){
   $T = New-JobTrigger -Once -At $dateTime.AddSeconds(2)
   $O = New-ScheduledJobOption -StartIfOnBattery -RunElevated -WakeToRun
   $dateTimeString=$dateTime.ToString('yyyyMMdd HH mm ss')
-  $module.Result.ip=$ip
-  Register-ScheduledJob -Name "Setting up IP at $dateTimeString" -ScheduledJobOption $O -Trigger $T -ScriptBlock ${Function:SetIp} -ArgumentList $ip,$subNet,$adapter.ifIndex,$gateway
+  Register-ScheduledJob -Name ("Setting up IP $ip of card " + $interface.ifAlias+" at $dateTimeString") -ScheduledJobOption $O -Trigger $T -ScriptBlock ${Function:SetIp} -ArgumentList $ip,$subNet,$adapter.ifIndex,$gateway
 }else{
   Try{
     SetIp $ip $subNet $adapter.ifIndex $gateway

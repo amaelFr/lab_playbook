@@ -1,9 +1,9 @@
 ---
 # - import_playbook: subPlaybook/hostname.yml
 
-# - hosts: firewall
-#   roles:
-#     - firewall
+- hosts: firewall
+  roles:
+    - firewall
 
 # - hosts: AD
 #   roles:
@@ -20,6 +20,6 @@
 #     - crivetimihai.virtualization.docker
 #     - andrewrothstein.docker-compose
 
-- hosts: logging
-  roles:
-    - fluentd
+# - hosts: logging
+#   roles:
+#     - fluentd

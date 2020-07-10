@@ -1,0 +1,7 @@
+domain: 
+  name: special-vpn.local
+  admin: Administrator
+  password: V@grant1
+  recoveryPassword: V@grant1
+DNSIP:
+  - 172.20.22.2

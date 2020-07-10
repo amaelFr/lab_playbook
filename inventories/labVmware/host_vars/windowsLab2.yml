@@ -1,14 +1,14 @@
-ansible_host: 192.168.29.225
+ansible_host: 192.168.29.133
 
 hostname: winTest
 
-ansible_host_tmp: 192.168.29.136
+ansible_host_tmp: 192.168.29.133
 interfaces:
 # first current interface
   - name: Ethernet0
     gateway: 192.168.29.2
     subnet: 24
-  # - name: Ethernet1
-  #   ip: 192.168.29.160
-  #   gateway: 192.168.29.2
-  #   subnet: 24
+  - name: Ethernet1
+    ip: 192.168.29.121
+    gateway: 192.168.29.2
+    subnet: 24

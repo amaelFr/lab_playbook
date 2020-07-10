@@ -1,0 +1,58 @@
+ansible_host: 192.168.1.200
+
+
+firewall_personal_rules:
+  - name: allow_endpoint_ping
+    action: pass
+    interface: opt1
+    # ipprotocol: inet46
+    protocol: icmp
+    source: endpoint_net
+    destination: any
+    position_after: top
+    state: present
+  - name: allow_endpoint_tcp
+    action: pass
+    interface: opt1
+    ipprotocol: inet46
+    protocol: tcp
+    source: endpoint_net
+    destination: any
+    position_after: top
+    state: present
+  - name: allow_dns
+    action: pass
+    interface: opt1
+    ipprotocol: inet4
+    protocol: udp
+    source: ad_host
+    destination: dns_public
+    destination_port: 53
+    position_after: top
+    state: present
+  - name: allow_all_server
+    action: pass
+    interface: opt1
+    ipprotocol: inet46
+    protocol: any
+    source: server_net
+    destination: any
+    position_after: top
+    state: present
+    enabled: False
+  - name: allow_all_server_test
+    action: block
+    interface: opt1
+    ipprotocol: inet46
+    protocol: icmp
+    source: any
+    destination: any
+    position_after: top
+    state: present
+
+
+# interfaces:
+#   - name: vtnet2
+#     ip: 172.20.20.1
+#     subnet: 24
+#     zone: filan

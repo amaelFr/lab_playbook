@@ -1,0 +1,93 @@
+ansible_host: 192.168.1.202
+
+
+firewall_personal_rules:
+  # - name: pass_private_network
+  #   action: pass
+  #   interface: opt2
+  #   ipprotocol: inet46
+  #   protocol: any
+  #   source: private_net
+  #   destination: any
+  #   position_after: top
+  #   state: present
+  - name: allow_endpoint_ping_ad
+    action: pass
+    interface: wan
+    ipprotocol: inet4
+    protocol: icmp
+    source: endpoint_net
+    destination: ad_host
+    position_after: top
+    state: present
+  - name: allow_endpoint_tcp_ad
+    action: pass
+    interface: wan
+    ipprotocol: inet4
+    protocol: tcp
+    source: endpoint_net
+    destination: ad_host
+    destination_port: AD_port_tcp
+    position_after: top
+    state: present
+  - name: allow_endpoint_udp_ad
+    action: pass
+    interface: wan
+    ipprotocol: inet4
+    protocol: udp
+    source: endpoint_net
+    destination: ad_host
+    destination_port: AD_port_udp
+    position_after: top
+    state: present
+  - name: allow_dns
+    action: pass
+    interface: opt2
+    ipprotocol: inet4
+    protocol: udp
+    source: ad_host
+    destination: dns_public
+    destination_port: 53
+    position_after: top
+    state: present
+  - name: allow_all_server
+    action: pass
+    interface: opt1
+    ipprotocol: inet46
+    protocol: any
+    source: server_net
+    destination: any
+    position_after: top
+    state: present
+    enabled: False
+  - name: allow_dns_dmz
+    action: pass
+    interface: opt1
+    ipprotocol: inet4
+    protocol: udp
+    source: dmz_net
+    destination: ad_host
+    destination_port: 53
+    position_after: top
+    state: present
+    enabled: False
+  - name: allow_all_server
+    action: pass
+    interface: opt2
+    ipprotocol: inet46
+    protocol: any
+    source: server_net
+    destination: any
+    position_after: top
+    state: present
+    enabled: False
+
+# interfaces:
+#   - name: vtnet2
+#     ip: 172.20.21.1
+#     subnet: 24
+#     zone: dmz
+#   - name: vtnet3
+#     ip: 172.20.22.2
+#     subnet: 24
+#     zone: ressource

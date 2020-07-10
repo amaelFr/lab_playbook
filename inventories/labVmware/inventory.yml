@@ -1,0 +1,50 @@
+all:
+  hosts:
+  children:
+    logging:
+      hosts:
+    win:
+      hosts:
+        windowsLab2:
+    linux:
+      hosts:
+    fixedIp:
+      hosts:
+        # windowsLab2:
+      children:
+        # The following children are not required (obviously done)
+        # CA:
+        # domainController:
+        # firewall:
+    docker:
+      hosts:
+        docker_dmz:
+        docker_service:
+    firewall:
+      children:
+        wan_firewall:
+        lan_firewall:
+        pfsense:
+          hosts:
+            pfsense:
+        opnsense:
+          hosts:
+      hosts:
+    AD:
+      hosts:
+      children:
+        domainController:
+          children:
+            domainMaster:
+              hosts:
+                AD_master:
+            domainReplica:
+              hosts:
+                # TODO replication
+        CA:
+          hosts:
+            # ad_pki:
+          children:
+    rootCert:
+      hosts:
+        # TODO share certificate to machine not in the AD

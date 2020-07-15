@@ -1,8 +1,8 @@
 ---
 collections:
-  - crivetimihai.virtualization
-  - inverse_inc.windows
+  # - crivetimihai.virtualization
+  # - inverse_inc.windows
   - pfsensible.core
   # - gantsign.kompose
   # - linux-system-roles.network
-  - andrewrothstein.docker-compose
+  # - andrewrothstein.docker-compose

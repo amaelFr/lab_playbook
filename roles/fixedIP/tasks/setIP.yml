@@ -33,67 +33,39 @@
 
 
 
-# - name: Set IP for linux
-#   block:
-#     - name: non RedHat distro
-#       block:
-#         # - name: install needed network manager libs
-#         #   package:
-#         #     name:
-#         #       - NetworkManager-libnm
-#         #       - nm-connection-editor
-#         #     state: present
-#         # - name: install needed network manager libs
-#         #   apt:
-#         #     name: python-gi
-#         #     state: present
-#         - name: install needed network manager libs
-#           package:
-#             name:
-#               - python3-dbus
-#               - network-manager
-#               - libnm-glib-dev
-#             state: present
-#         - name: Set IP for linux
-#           nmcli:
-#             type: ethernet
-#             conn_name: "{{ interface.name|d('ens33') }}"
-#             ifname: "{{ interface.name|d('ens33') }}"
-#             ip4: "{{ interface.ip|d(ansible_host_final) }}"
-#             gw4: "{{ interface.gateway|d(None) }}"
-#             state: present
-#       when: ansible_facts['os_family'] != 'RedHat'
-#     - name: Set IP
-#       include_role:
-#         name: linux-system-roles.network
-#       vars:
-#         network_connections:
-#           - name: "{{ interface.name|d('ens33') }}"
-#             interface_name: "{{ interface.name|d('ens33') }}"
-#             # state: up
-#             type: "ethernet"
-#             autoconnect: yes
-#             ip:
-#               dhcp4: no
-#               gateway4: "{{ interface.gateway|d('0.0.0.0') }}"
-#               address:
-#                 - "{{ interface.ip|d(ansible_host_final) }}/{{ interface.subnet|d(24) }}"
-#       when: ansible_facts['os_family'] == 'RedHat' or ansible_facts['os_family'] == 'CentOS'
-#     # - name: Restart network
-#     #   shell: systemctl restart network
-#     - name: restart systemd-networkd
-#       systemd:
-#         name: network
-#         state: restarted
-#       async: 30
-#       poll: 0
-#     - name: Wait after service restart
-#       pause:
-#         seconds: 10
-#       when: not interface.ip|d(False)
-#   become: yes
-#   become_user: root
-#   when: ansible_facts['os_family'] != 'Windows' and (ansible_facts['os_family'] != 'FreeBSD' or 'pfSense' not in ansible_facts['kernel_version'])
+- name: Set IP for linux
+  block:
+    - name: Set IP
+      include_role:
+        name: linux-system-roles.network
+      vars:
+        network_connections:
+          - name: "{{ interface.name|d('ens33') }}"
+            interface_name: "{{ interface.name|d('ens33') }}"
+            # state: up
+            type: "ethernet"
+            autoconnect: yes
+            ip:
+              dhcp4: no
+              gateway4: "{{ interface.gateway|d('0.0.0.0') }}"
+              address:
+                - "{{ interface.ip|d(ansible_host_final) }}/{{ interface.subnet|d(24) }}"
+      when: ansible_facts['distribution'] == 'RedHat' or ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] =='Fedora'
+    # - name: Restart network
+    #   shell: systemctl restart network
+  #   - name: restart systemd-networkd
+  #     systemd:
+  #       name: network
+  #       state: restarted
+  #     async: 30
+  #     poll: 0
+  #   - name: Wait after service restart
+  #     pause:
+  #       seconds: 10
+  #     when: not interface.ip|d(False)
+  # become: yes
+  # become_user: root
+  when: ansible_facts['os_family'] != 'Windows' and (ansible_facts['os_family'] != 'FreeBSD' or 'pfSense' not in ansible_facts['kernel_version'])
 
 
 

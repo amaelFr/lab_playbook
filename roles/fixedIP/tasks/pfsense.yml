@@ -1,0 +1,52 @@
+#########################
+##
+# Fail when 2 static ip are on the same net (do it using cli (web not working too))
+##
+#########################
+- name: Different interface
+  pfsensible.core.interface:
+    interface: "{{ interface.name }}"
+    ipv4_address: "{{ interface.ip }}"
+    ipv4_prefixlen: "{{ interface.subnet|d(24) }}"
+    ipv4_type: static
+    descr: "{{ interface.descr|d(interface.interface) }}"
+    enable: true
+  when: interface.ip|d(False)
+- name: same interface
+  block:
+    - pfsensible.core.interface:
+        interface: "{{ interface.name }}"
+        ipv4_address: "{{ ansible_host_final }}"
+        ipv4_prefixlen: "{{ interface.subnet|d(24) }}"
+        ipv4_type: static
+        descr: "{{ interface.descr|d(interface.interface) }}"
+        enable: true
+      async: 100
+      poll: 0
+    - name: Change back ansible's ip address for pfsense
+      set_fact:
+        ansible_host: "{{ ansible_host_final }}"
+    - name: Wait for the hosts network interface to come back up
+      local_action:
+        module: wait_for
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port|d(22) }}"
+        delay: 10
+        state: started
+  when: not interface.ip|d(False)
+- name: Interface with gateway
+  block:
+  - pfsensible.core.gateway:
+      name: "{{ interface.descr|d(interface.interface) }}_GW"
+      interface: "{{ interface.descr|d(interface.interface) }}"
+      gateway: "{{ interface.gateway }}"
+      state: present
+  - pfsensible.core.interface:
+      interface: "{{ interface.name }}"
+      ipv4_address: "{{ interface.ip|d(ansible_host) }}"
+      ipv4_gateway: "{{ interface.descr|d(interface.interface) + '_GW' }}"
+      ipv4_prefixlen: "{{ interface.subnet|d(24) }}"
+      ipv4_type: static
+      descr: "{{ interface.descr|d(interface.interface) }}"
+      enable: true
+  when: interface.gateway|d(False)

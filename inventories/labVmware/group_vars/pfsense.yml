@@ -1,2 +1,2 @@
 ansible_user: root
-ansible_password: pfsense
+ansible_password: opnsense

@@ -9,27 +9,26 @@
 - name: Set Facts
   setup:
 
+- set_fact:
+  done: 0
+
 - name: "Set windows IP interface {{ interface.name|d('Ethernet0') }}"
-  win_static_IP:
-    interface: "{{ interface.name|d('Ethernet0') }}"
-    ip: "{{ interface.ip|d(ansible_host_final) }}"
-    gateway: "{{ interface.gateway|d(omit) }}"
-    subNet: "{{ interface.subnet|d(24) }}"
-    currentInterface: "{{ not (interface.ip|d(False)) }}"
+  block:
+    - win_static_IP:
+      interface: "{{ interface.name|d('Ethernet0') }}"
+      ip: "{{ interface.ip|d(ansible_host_final) }}"
+      gateway: "{{ interface.gateway|d(omit) }}"
+      subNet: "{{ interface.subnet|d(24) }}"
+      currentInterface: "{{ not (interface.ip|d(False)) }}"
+    - set_fact:
+      done: 1
   when: ansible_facts['os_family'] == 'Windows'
 
-#########################
-##
-# Fail when 2 static ip are on the same net (over
-##
-#########################
-
 - name: set pfsense ip
-  import_tasks: pfsense.yml
-    # - name: Failed same interface not permitted for pfsense static IP
-    #   fail:
-    #     msg: Failed same interface not permitted for pfsense static IP
-    #   when: ansible_host_final|d(False)
+  block:
+    - import_tasks: pfsense.yml
+    - set_fact:
+      done: 1
   when: ansible_facts['os_family'] == 'FreeBSD' and 'pfSense' in ansible_facts['kernel_version']
 
 
@@ -100,8 +99,8 @@
 
 - name: Set unknow system IP
   fail:
-    msg: "Can't set the ip of {{ inventory_hostname }} os family {{ ansible_facts['os_family'] }}"
-  when: ansible_facts['os_family'] != 'Windows' and ansible_facts['os_family'] == 'FreeBSD' and 'pfSense' not in ansible_facts['kernel_version']
+    msg: "The ip of {{ inventory_hostname }} os family {{ ansible_facts['os_family'] }} have not bee changed, it coul be not take in account by the role"
+  when: done|d(0) != 1
 
 
 

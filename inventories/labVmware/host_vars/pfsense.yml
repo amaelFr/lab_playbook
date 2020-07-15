@@ -1,6 +1,6 @@
-ansible_host: 192.168.29.130
+ansible_host: 192.168.29.140
 
-ansible_host_tmp: 192.168.29.176
+ansible_host_tmp: 192.168.29.133
 interfaces:
 # first current interface
   - name: em1
@@ -8,13 +8,13 @@ interfaces:
     subnet: 24
     interface: LAN
     descr: CONF
-  # - name: em0
-  #   interface: WAN
-  #   ip: 192.168.27.121
-  #   gateway: 192.168.27.2
-  #   subnet: 24
-  # - name: em2
-  #   interface: OPT1
-  #   ip: 192.168.28.121
-  #   gateway: 192.168.28.2
-  #   subnet: 24
+  - name: em0
+    interface: WAN
+    ip: 192.168.27.121
+    gateway: 192.168.27.1
+    subnet: 24
+  - name: em2
+    interface: OPT1
+    ip: 192.168.28.121
+    gateway: 192.168.28.2
+    subnet: 24

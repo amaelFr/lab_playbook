@@ -1,0 +1,14 @@
+ansible_host: 192.168.29.165
+ansible_user: ubuntu
+ansible_password: Ertyuiop
+
+ansible_host_tmp: 192.168.29.165
+
+interfaces:
+  - name: ens192
+    gateway: 192.168.29.2
+    # ip: 192.168.29.182
+  - name: ens193
+    gateway: 192.168.29.2
+    ip: 192.168.29.182
+    # subnet: 24

@@ -1,0 +1,11 @@
+ansible_host: 192.168.29.160
+ansible_user: centos
+ansible_password: centos
+
+ansible_host_tmp: 192.168.29.185
+
+interfaces:
+  - name: ens160
+    gateway: 192.168.29.2
+    # ip: 192.168.29.180
+    # subnet: 24

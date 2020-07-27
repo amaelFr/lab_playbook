@@ -32,6 +32,7 @@
         host: "{{ ansible_host }}"
         port: "{{ ansible_port|d(22) }}"
         delay: 10
+        timeout: 60
         state: started
   when: not interface.ip|d(False)
 - name: Interface with gateway

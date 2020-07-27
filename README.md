@@ -10,7 +10,7 @@ export KUBECONFIG=/etc/kubernetes/kubelet.conf
 ## TODO
 ### ORDER
 1. fixedIP (not perfect)
-2. setupFirewall (rule all to all)(only pfsense)
+2. setupFirewall (rule all to all)(only pfsense) (TODO port forwarding) // TODO https://www.sophos.com/fr-fr/products/free-tools/sophos-utm-home-edition.aspx fortinet
 3. Domain (dns), join, (TODO GPO, users)
 4. PKI (only windows, add standalone, TODO openssl (non windows host))
 5. File share, TODO (here to deploy gpo next)
@@ -24,3 +24,4 @@ export KUBECONFIG=/etc/kubernetes/kubelet.conf
     *  wazuh
     * ...
 9. ... ? 
+10. firewall production rule

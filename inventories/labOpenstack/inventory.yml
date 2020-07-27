@@ -34,11 +34,11 @@ all:
           children:
             domainMaster:
               hosts:
-                # ad_pki:
+                ad_pki:
             domainReplica:
               hosts:
         CA:
           hosts:
-            # ad_pki:
+            ad_pki:
           children:
             

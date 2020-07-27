@@ -1,11 +1,11 @@
 all:
   hosts:
   children:
-    logging:
-      hosts:
+    # logging:
+    #   hosts:
     win:
       hosts:
-        AD_master:
+        # AD_master:
     linux:
       hosts:
     fixedIp:
@@ -17,12 +17,8 @@ all:
         # firewall:
     docker:
       hosts:
-        docker_dmz:
-        docker_service:
     firewall:
       children:
-        wan_firewall:
-        lan_firewall:
         opnsense:
         pfsense:
           hosts:
@@ -34,7 +30,7 @@ all:
           children:
             domainMaster:
               hosts:
-                AD_master:
+                # AD_master:
             domainReplica:
               hosts:
                 # TODO replication

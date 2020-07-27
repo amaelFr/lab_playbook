@@ -11,6 +11,9 @@ all:
     fixedIp:
       hosts:
         # windowsLab2:
+        # centos:
+        ubuntu0:
+        # ubuntu1:
       children:
         # The following children are not required (obviously done)
         # CA:
@@ -22,11 +25,8 @@ all:
         docker_service:
     firewall:
       children:
-        wan_firewall:
-        lan_firewall:
         pfsense:
           hosts:
-            pfsense:
         opnsense:
           hosts:
       hosts:
@@ -37,7 +37,7 @@ all:
           children:
             domainMaster:
               hosts:
-                AD_master:
+                # AD_master:
             domainReplica:
               hosts:
                 # TODO replication

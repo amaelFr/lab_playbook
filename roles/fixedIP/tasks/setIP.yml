@@ -1,6 +1,10 @@
 ---
 # file: roles/common/tasks/main.yml
 
+- name: Verify IP necessary variables
+  fail:
+    msg: Error to set IP you must specify for the same interface ansible_host_tmp or an ip for a children connection
+  when: not (interface.ip|d(False) or ansible_host_tmp|d(False))
 - name: Set temporary ansible host variable
   set_fact:
     ansible_host_final: "{{ ansible_host }}"
@@ -10,25 +14,25 @@
   setup:
 
 - set_fact:
-  done: 0
+    done: 0
 
 - name: "Set windows IP interface {{ interface.name|d('Ethernet0') }}"
   block:
     - win_static_IP:
-      interface: "{{ interface.name|d('Ethernet0') }}"
-      ip: "{{ interface.ip|d(ansible_host_final) }}"
-      gateway: "{{ interface.gateway|d(omit) }}"
-      subNet: "{{ interface.subnet|d(24) }}"
-      currentInterface: "{{ not (interface.ip|d(False)) }}"
+        interface: "{{ interface.name|d('Ethernet0') }}"
+        ip: "{{ interface.ip|d(ansible_host_final) }}"
+        gateway: "{{ interface.gateway|d(omit) }}"
+        subNet: "{{ interface.subnet|d(24) }}"
+        currentInterface: "{{ not (interface.ip|d(False)) }}"
     - set_fact:
-      done: 1
+        done: 1
   when: ansible_facts['os_family'] == 'Windows'
 
 - name: set pfsense ip
   block:
     - import_tasks: pfsense.yml
     - set_fact:
-      done: 1
+        done: 1
   when: ansible_facts['os_family'] == 'FreeBSD' and 'pfSense' in ansible_facts['kernel_version']
 
 
@@ -36,42 +40,34 @@
 - name: Set IP for linux
   block:
     - name: Set IP
-      include_role:
-        name: linux-system-roles.network
-      vars:
-        network_connections:
-          - name: "{{ interface.name|d('ens33') }}"
-            interface_name: "{{ interface.name|d('ens33') }}"
-            # state: up
-            type: "ethernet"
-            autoconnect: yes
-            ip:
-              dhcp4: no
-              gateway4: "{{ interface.gateway|d('0.0.0.0') }}"
-              address:
-                - "{{ interface.ip|d(ansible_host_final) }}/{{ interface.subnet|d(24) }}"
-      when: ansible_facts['distribution'] == 'RedHat' or ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] =='Fedora'
-    # - name: Restart network
-    #   shell: systemctl restart network
-  #   - name: restart systemd-networkd
-  #     systemd:
-  #       name: network
-  #       state: restarted
-  #     async: 30
-  #     poll: 0
-  #   - name: Wait after service restart
-  #     pause:
-  #       seconds: 10
-  #     when: not interface.ip|d(False)
-  # become: yes
-  # become_user: root
-  when: ansible_facts['os_family'] != 'Windows' and (ansible_facts['os_family'] != 'FreeBSD' or 'pfSense' not in ansible_facts['kernel_version'])
-
-
+      block:
+        - include_role:
+            name: linux-system-roles.network
+          vars:
+            network_connections:
+              - name: "{{ interface.name|d('ens33') }}"
+                interface_name: "{{ interface.name|d('ens33') }}"
+                # state: up
+                type: "ethernet"
+                autoconnect: yes
+                ip:
+                  dhcp4: no
+                  gateway4: "{{ interface.gateway|d('0.0.0.0') }}"
+                  address:
+                    - "{{ interface.ip|d(ansible_host_final) }}/{{ interface.subnet|d(24) }}"
+        - name: Restart network
+          shell: ifdown {{ interface.name|d('ens33') }} && ifup {{ interface.name|d('ens33') }}
+          async: 30
+          poll: 0
+        - set_fact:
+            done: 1
+      when: ansible_facts['distribution'] == 'RedHat' or ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'Fedora' or ansible_facts['distribution'] == 'Ubuntu' and ( ansible_facts['distribution_version'] == '16.04' or ansible_facts['distribution_version'] == '14.04' )
+  become: yes
+  become_user: root
 
 - name: Set unknow system IP
   fail:
-    msg: "The ip of {{ inventory_hostname }} os family {{ ansible_facts['os_family'] }} have not bee changed, it coul be not take in account by the role"
+    msg: "The ip of {{ inventory_hostname }} os family {{ ansible_facts['distribution'] }} version {{ ansible_facts['distribution_version'] }} have not bee changed, it coul be not take in account by the role"
   when: done|d(0) != 1
 
 
@@ -90,8 +86,6 @@
         host: "{{ ansible_host }}"
         port: "{{ ansible_winrm_port|d(ansible_port|d(22)) }}"
         delay: 10
+        timeout: 60
         state: started
-      register: wait_result
-      # when: ansible_facts['os_family'] == 'Windows'
   when: not interface.ip|d(False)
-

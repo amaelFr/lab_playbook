@@ -1,0 +1,10 @@
+domain: 
+  name: lab.local
+  ##
+  ## generally user/password in use for domain controller master
+  admin: Administrator
+  password: V@grant1
+  recoveryPassword: V@grant1
+DNSIP:
+  - XXX.XXX.XXX.XXX
+  - XXX.XXX.XXX.XXX

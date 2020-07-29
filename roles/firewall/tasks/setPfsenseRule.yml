@@ -12,5 +12,5 @@
     after: "{{ rule.position_after|d(None) }}"
     before: "{{ rule.position_before|d(None) }}"
     log: "{{ rule.log|d(True) }}"
-    disabled: "{{ not rule.enabled|d(True) }}"
+    disabled: "{{ not (rule.update and update )|d(rule.enabled|d(True)) }}"
     state: present

@@ -77,9 +77,6 @@
     - name: Set back ansible host variable
       set_fact:
         ansible_host: "{{ ansible_host_final }}"
-    # - name: Verify host interface post changement
-    #   ping:
-    #   when: ansible_facts['os_family'] != 'Windows'
     - name: Wait for the hosts network interface to come back up
       local_action:
         module: wait_for

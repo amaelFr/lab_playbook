@@ -1,14 +1,14 @@
 ---
 # - import_playbook: subPlaybook/hostname.yml
 
-- hosts: firewall
-  roles:
-    - firewall
-  gather_facts: no
-
-# - hosts: AD
+# - hosts: firewall
 #   roles:
-#     - AD
+#     - firewall
+#   gather_facts: no
+
+- hosts: AD
+  roles:
+    - AD
 
 # - import_playbook: subPlaybook/setDNS.yml
 

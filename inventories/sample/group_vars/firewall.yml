@@ -2,37 +2,22 @@
 ansible_user: root
 ansible_password: pfsense
 
+
+aliases:
+  - firewall_alias
+  # - XXXXXXXXX
+####################
+# aliases:  
+#   - name: net_rfc_1918
+#     type: network
+#     values:
+#       - 10.0.0.0/8
+#       - 172.16.0.0/12
+#       - 192.168.0.0/16
+
+
 firewall_alias:
-  - name: private_net
-    type: network
-    values:
-      - 172.20.20.0/24
-      - 172.20.21.0/24
-      - 172.20.22.0/24
-      - 172.20.23.0/24
-  - name: dmz_net
-    type: network
-    values:
-      - 172.20.21.0/24
-  - name: internal_net
-    type: network
-    values:
-      - 172.20.22.0/24
-  - name: endpoint_net
-    type: network
-    values:
-      - 172.20.23.0/24
-  - name: internal_net
-    type: network
-    values:
-      - 172.20.22.0/24
-  - name: server_net
-    type: network
-    values:
-      - 172.20.22.0/24
-      - 172.20.21.0/24
-      - 172.20.20.2/32
-  - name: all_private_net
+  - name: net_rfc_1918
     type: network
     values:
       - 10.0.0.0/8
@@ -43,10 +28,6 @@ firewall_alias:
     values:
       - 1.1.1.1
       - 1.0.0.1
-  - name: ad_host
-    type: host
-    values:
-      - 172.20.22.2
   - name: AD_port_tcp
     type: port
     values:
@@ -60,4 +41,52 @@ firewall_alias:
     type: port
     values:
       - 53
-      - 389
+      - 389 
+
+
+rules:
+  - firewall_rules
+  # - XXXXXXXXX
+####################
+# rules:
+#   - name: allow_any_ping
+#     action: pass
+#     interface: opt1
+#     ipprotocol: inet46
+#     protocol: icmp
+#     source: any
+#     destination: any
+#     position_after: top
+#     state: present
+#     update: true
+
+firewall_rules:
+  - name: allow_any_ping
+    action: pass
+    interface: opt1
+    ipprotocol: inet46
+    protocol: icmp
+    source: any
+    destination: any
+    position_after: top
+    state: present
+    update: true
+
+
+NATs:
+  - firewall_NATs
+  # - XXXXXXXXX
+####################
+# NATs:
+#   - descr: wan NAT
+#     interface: WAN
+#     source: any
+#     destination: any
+#     ipprotocol: inet46
+
+firewall_NATs:
+  - descr: wan NAT
+    interface: WAN
+    source: any
+    destination: any
+    ipprotocol: inet46

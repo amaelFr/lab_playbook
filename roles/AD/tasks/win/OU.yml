@@ -1,0 +1,24 @@
+- name: Create OU
+  block:
+    - name: Get Parent OU path
+      win_shell: "Get-ADOrganizationalUnit -Filter 'Name -like \"{{ OU.parent }}\"' -SearchBase \"{{ domain.name.split('.')|map('regex_replace', '^(.*)$', 'DC=\\1')|list|join(',') }}\" | ConvertTo-Json"
+      register: OUT
+    - set_fact:
+        OUT: "{{ OUT.stdout|from_json }}"
+    - fail:
+        msg: "Error can't get parent OU {{ OU.parent }}"
+      when: OUT is not mapping or not OUT.DistinguishedName|d(False)
+  when: OU.parent|d(False)
+- include_role:
+    name: amtega.win_domain_ous
+  vars:
+    win_domain_ous_no_log: false
+    win_domain_ous:
+      - name: "{{ OU.name }}"
+        path: "{{ OUT.DistinguishedName if OU.parent else (domain.name.split('.')|map('regex_replace', '^(.*)$', 'DC=\\1')|list|join(',')) }}"
+        # managed_by: "{{ OU.managed_by|d()  }}"
+        # domain_server: "{{ OU.serv|d(OU.domain_server|d(domain.controller|d(None))) }}"
+        protected_from_accidental_deletion: "{{ OU.del|d(True) }}"
+        recursive: "{{ OU.rec|d(OU.recursive|d(False)) }}"
+        description: "{{ OU.descr|d('Ansible OU ' + OU.name + ' default description.') }}"
+        state: "{{ 'present' if OU.present|d(True) else 'absent' }}"

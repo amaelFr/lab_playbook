@@ -1,0 +1,25 @@
+ansible_host: 192.168.29.183
+
+ansible_host_tmp: 192.168.29.183
+
+hostname: ad-master
+
+interfaces:
+  - name: Ethernet0
+    gateway: 192.168.29.2
+
+
+OUS:
+  - OUS_variable
+OUS_variable:
+  # - name: OUBase
+  - name: OUInsideBase
+    parent: test1
+  - name: OUInsideBase2
+    parent: OUInsideBase
+  #   parents:
+  #     - OUBase
+  # - name: OUInsideInsideBase
+  #   parents:
+  #     - OUInsideBase
+  #     - OUBase

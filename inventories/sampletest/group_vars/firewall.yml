@@ -1,0 +1,92 @@
+## pfsense credential
+ansible_user: root
+ansible_password: pfsense
+
+
+aliases:
+  - firewall_alias
+  # - XXXXXXXXX
+####################
+# aliases:  
+#   - name: net_rfc_1918
+#     type: network
+#     values:
+#       - 10.0.0.0/8
+#       - 172.16.0.0/12
+#       - 192.168.0.0/16
+
+
+firewall_alias:
+  - name: net_rfc_1918
+    type: network
+    values:
+      - 10.0.0.0/8
+      - 172.16.0.0/12
+      - 192.168.0.0/16
+  - name: dns_public
+    type: host
+    values:
+      - 1.1.1.1
+      - 1.0.0.1
+  - name: AD_port_tcp
+    type: port
+    values:
+      - 88
+      - 135
+      - 139
+      - 389
+      - 445
+      - 49152,65535
+  - name: AD_port_udp
+    type: port
+    values:
+      - 53
+      - 389 
+
+
+rules:
+  - firewall_rules
+  # - XXXXXXXXX
+####################
+# rules:
+#   - name: allow_any_ping
+#     action: pass
+#     interface: opt1
+#     ipprotocol: inet46
+#     protocol: icmp
+#     source: any
+#     destination: any
+#     position_after: top
+#     state: present
+#     update: true
+
+firewall_rules:
+  - name: allow_any_ping
+    action: pass
+    interface: opt1
+    ipprotocol: inet46
+    protocol: icmp
+    source: any
+    destination: any
+    position_after: top
+    state: present
+    update: true
+
+
+NATs:
+  - firewall_NATs
+  # - XXXXXXXXX
+####################
+# NATs:
+#   - descr: wan NAT
+#     interface: WAN
+#     source: any
+#     destination: any
+#     ipprotocol: inet46
+
+firewall_NATs:
+  - descr: wan NAT
+    interface: WAN
+    source: any
+    destination: any
+    ipprotocol: inet46

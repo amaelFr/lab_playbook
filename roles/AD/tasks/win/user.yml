@@ -1,0 +1,62 @@
+- set_fact:
+    OU_ldap_path: "{{ False }}"
+- name: Get OU parent
+  include: subTask/getOUPath.yml
+  vars:
+    OU_name: "{{ AD_user.OU }}"
+    domain_name_var: "{{ domain.name }}"
+  when: AD_user.OU|d(False)
+- win_domain_user:
+    name: "{{ AD_user.name }}"
+    state: absent
+- name: "Add user {{ AD_user.name }}"
+  win_domain_user:
+    name: "{{ AD_user.name }}"
+    upn: "{{ AD_user.name }}@{{ domain.name }}"
+    path: "{{ OU_ldap_path if OU_ldap_path|d(False) else 'CN=Users,'+(domain.name.split('.')|map('regex_replace', '^(.*)$', 'DC=\\1')|list|join(',')) }}"
+    firstname: "{{ AD_user.firstname|d(AD_user.name) }}"
+    company: "{{ AD_user.company|d(domain.name) }}"
+    password: "{{ AD_user.password|d(AD_user.pass)|d(domain.password) }}"
+    state: present
+    groups: "{{ AD_user.groups|d([]) }}"
+    enabled: "{{ AD_user.enabled|d(True) }}"
+    password_expired: "{{ AD_user.password_expired|d(AD_user.pass_expired)|d(True) }}"
+    password_never_expired: False
+    user_cannot_change_password: "{{ AD_user.change_pass|d(AD_user.change_password)|d(False) }}"
+- win_domain_user:
+    name: "{{ AD_user.name }}"
+    surname: "{{ AD_user.surname }}"
+  when: AD_user.surname|d(False)
+- win_domain_user:
+    name: "{{ AD_user.name }}"
+    street: "{{ AD_user.street }}"
+  when: AD_user.street|d(False)
+- win_domain_user:
+    name: "{{ AD_user.name }}"
+    city: "{{ AD_user.city }}"
+  when: AD_user.city|d(False)
+- win_domain_user:
+    name: "{{ AD_user.name }}"
+    state_province: "{{ AD_user.state_province }}"
+  when: AD_user.state_province|d(False)
+- win_domain_user:
+    name: "{{ AD_user.name }}"
+    postal_code: "{{ AD_user.postal_code }}"
+  when: AD_user.postal_code|d(False)
+- win_domain_user:
+    name: "{{ AD_user.name }}"
+    postal_code: "{{ AD_user.postal_code }}"
+  when: AD_user.postal_code|d(False)
+- win_domain_user:
+    name: "{{ AD_user.name }}"
+    country: "{{ AD_user.country }}"
+  when: AD_user.country|d(False)
+- win_domain_user:
+    name: "{{ AD_user.name }}"
+    email: "{{ AD_user.email|d(AD_user.mail) }}"
+  when: AD_user.email|d(AD_user.mail)|d(False)
+- win_domain_user:
+    name: "{{ AD_user.name }}"
+    attributes:
+      telephoneNumber: "{{ AD_user.tel }}"
+  when: AD_user.tel|d(False)

@@ -1,0 +1,11 @@
+- name: Get Parent OU path
+  win_shell: "Get-ADOrganizationalUnit -Filter 'Name -like \"{{ OU_name }}\"' -SearchBase \"{{ domain_name_var.split('.')|map('regex_replace', '^(.*)$', 'DC=\\1')|list|join(',') }}\" | ConvertTo-Json"
+  register: out
+- set_fact:
+    out: "{{ out.stdout|from_json }}"
+- fail:
+    msg: "Error can't get parent OU {{ OU_var.parent }}"
+  when: out is not mapping or not out.DistinguishedName|d(False)
+
+- set_fact:
+    OU_ldap_path: "{{ out.DistinguishedName }}"

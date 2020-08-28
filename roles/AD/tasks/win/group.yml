@@ -1,0 +1,19 @@
+- set_fact:
+    OU_ldap_path: "{{ False }}"
+- name: Get OU parent
+  include: subTask/getOUPath.yml
+  vars:
+    OU_name: "{{ AD_group.OU }}"
+    domain_name_var: "{{ domain.name }}"
+  when: AD_group.OU|d(False)
+- name: "Create group {{ AD_group.name }}"
+  win_domain_group:
+    name: "{{ AD_group.name }}"
+    scope: "{{ AD_group.scope|d('global') }}"
+    path: "{{ OU_ldap_path if OU_ldap_path|d(False) else 'CN=Users,'+(domain.name.split('.')|map('regex_replace', '^(.*)$', 'DC=\\1')|list|join(',')) }}"
+    category: "{{ AD_group.category|d('security') }}"
+    protected_from_accidental_deletion: "{{ AD_group.protected|d(True) }}"
+    description: "{{ OU.descr|d('Ansible group' + AD_group.name + ' default description.') }}"
+    attributes:
+      mail: "{{ AD_group.mail|d('groups@'+domain.name) }}"
+      wWWHomePage: "{{ AD_group.web|d(domain.name) }}"

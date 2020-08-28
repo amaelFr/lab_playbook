@@ -8,10 +8,32 @@ interfaces:
   - name: Ethernet0
     gateway: 192.168.29.2
 
+AD_users:
+  - users_variable
 
-OUS:
-  - OUS_variable
-OUS_variable:
+users_variable:
+  # - name: OUBase
+  - name: testU
+    surname: testtttt
+    city: washington
+    groups:
+     - testGroup
+    mail: test@mail.com
+    OU: test1
+
+AD_groups:
+  - groups_variable
+
+groups_variable:
+  # - name: OUBase
+  - name: testGroup
+    OU: test1
+  - name: testGroupBase
+    # OU: test1
+
+AD_OUs:
+  - OUs_variable
+OUs_variable:
   # - name: OUBase
   - name: OUInsideBase
     parent: test1

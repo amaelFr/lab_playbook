@@ -4,9 +4,9 @@
 
 
 - name: Default ping windows
-  when: groups['win']|d(False) and inventory_hostname in groups['win']
+  when: ansible_facts['os_family'] == 'Windows'
   win_ping:
 
 - name: Default ping linux
-  when: groups['win']|d(False) and inventory_hostname in groups['lin']
+  when: ansible_facts['os_family'] != 'Windows'
   ping:

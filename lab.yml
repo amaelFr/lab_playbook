@@ -6,9 +6,9 @@
 #     - firewall
 #   gather_facts: no
 
-- hosts: AD
-  roles:
-    - AD
+# - hosts: AD
+#   roles:
+#     - AD
 
 # - import_playbook: subPlaybook/setDNS.yml
 
@@ -20,6 +20,17 @@
 #   roles:
 #     - role: crivetimihai.virtualization.docker
     # - andrewrothstein.docker-compose
+
+- hosts: all
+  roles:
+    - file_folder
+
+# - hosts: all
+#   tasks:
+#     - name: fileshare
+#       include_role:
+#         name: fileshare
+#       when: shares|d(False)
 
 # - hosts: logging
 #   roles:

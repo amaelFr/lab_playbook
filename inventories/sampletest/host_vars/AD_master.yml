@@ -45,3 +45,38 @@ OUs_variable:
   #   parents:
   #     - OUInsideBase
   #     - OUBase
+
+shares:
+  - name: testingininignini
+    namespace: testnamspacestest
+    # host: ad-master
+    type: dfs
+    path: C:\sharing
+    # owner: Administrator
+
+folders:
+  - path: 'C:\testing1\testing'
+    owner:
+      name: Administrator
+      recurse: true
+    # owner: Administrator
+    acls:
+      - user: Users #Domain User
+        state: present
+        inherit: ContainerInherit
+        propagation: InheritOnly 
+        rights: Read
+files:
+  - sourceLocal: ../../inventories/files/test.zip
+    destination: C:/testing1/testing/testfolder
+    uncompress: true
+    owner:
+      name: Administrator
+      recurse: true
+    # owner: Administrator
+    acls:
+      - user: Users
+        state: present
+        inherit: ContainerInherit
+        propagation: InheritOnly 
+        rights: Read

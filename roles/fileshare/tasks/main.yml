@@ -1,0 +1,10 @@
+---
+- loop: "{{ shares }}"
+  loop_control:
+    loop_var: share
+  include: winShare.yml
+  when: ansible_facts['os_family'] == 'Windows'
+
+# - name: Default ping linux
+#   when: ansible_facts['os_family'] != 'Windows'
+#   ping:

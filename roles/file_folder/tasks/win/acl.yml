@@ -1,0 +1,9 @@
+- name: Set ACL
+  win_acl:
+    path: "{{ acl_path }}"
+    user: "{{ acl.user|d('Users' if ansible_facts['windows_domain'] == 'WORKGROUP' else 'Domain Users') }}"
+    rights: "{{ acl.rights|d('Read') }}"
+    type: "{{ acl.type|d('allow') }}"
+    state: "{{ acl.state|d('present') }}"
+    inherit: "{{ acl.inherit|d('ContainerInherit, ObjectInherit') }}"
+    propagation: "{{ acl.propagation|d('InheritOnly') }}"

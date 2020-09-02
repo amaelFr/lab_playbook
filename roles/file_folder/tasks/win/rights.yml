@@ -1,0 +1,15 @@
+- set_fact:
+    path_TMP: "{{ rights_var.destination|d(rights_var.path) }}"
+- name: Set the owner
+  win_owner:
+    path: "{{ path_TMP }}"
+    user: "{{ rights_var.owner.name if rights_var.owner is mapping else rights_var.owner|d('Administrator') }}"
+    recurse: "{{ rights_var.owner.recursive|d(True) if rights_var.owner is mapping else True }}"
+- name: Set ACLs of the rights_var
+  loop: "{{ rights_var.acls }}"
+  loop_control:
+    loop_var: acl
+  include: acl.yml
+  vars:
+    - acl_path: "{{ path_TMP }}"
+  when: rights_var.acls|d(False)

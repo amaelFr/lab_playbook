@@ -1,0 +1,34 @@
+- name: Check directory exists
+  win_file:
+    path: "{{ share.src|d(share.path) }}"
+    state: directory
+
+- name: SMB
+  win_share:
+    name: "{{ share.name }}"
+    description: "{{ share.desc|d('Share '+share.name+'default description') }}"
+    path: "{{ share.src|d(share.path) }}"
+    list: "{{ share.list|d(False) }}"
+    full: "{{ share.full|d(['Domain Admins'])|join(',') }}"
+    read: "{{ share.read|d(['Domain Users'])|join(',') }}"
+    change: "{{ share.change|d([])|join(',') }}"
+    deny: "{{ share.deny|d([])|join(',') }}"
+    encrypt: "{{ share.encrypt|d(True) }}"
+    caching_mode: "{{ share.catching|d('None') }}"
+  when: not (share.host|d(ansible_facts['hostname']) != ansible_facts['hostname'])
+  # when: not share.type|d(False) or share.type == "smb" or share.type == "SMB" or share.type == "samba" 
+
+- name: DFS
+  block:
+    - name: Install DFS feature if required
+      win_feature:
+        name: FS-DFS-Namespace
+        include_management_tools: yes
+        include_sub_features: yes
+        state: present
+    - debug:
+        msg: New-DfsnRoot -TargetPath "\\{{ share.host|d(ansible_facts['hostname']) }}\"{{ share.name }}" -Type DomainV2 -Path "\\{{ domain.name }}\{{ share.namespace }}"
+    - name: Create DFS file share
+      win_shell: New-DfsnRoot -TargetPath "\\{{ share.host|d(ansible_facts['hostname']) }}\"{{ share.name }}" -Type DomainV2 -Path "\\{{ domain.name }}\{{ share.namespace }}"
+
+  when: share.type|d(False) and share.type == "dfs" or share.type == "DFS" 

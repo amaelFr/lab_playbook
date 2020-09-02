@@ -1,0 +1,9 @@
+- win_copy:
+    src: "{{ file.sourceLocal }}"
+    dest: "{{ (ansible_facts['env']['TMP']  + '\/' + file.sourceLocal.split('\/')[-1]) if file.uncompress|d(false) else file.destination }}"
+    force: true
+- win_unzip:
+    src: "{{ (ansible_facts['env']['TMP']  + '\/' + file.sourceLocal.split('\/')[-1]) if file.uncompress|d(false) else file.destination }}"
+    dest: "{{ file.destination }}"
+    delete_archive: yes
+  when: file.uncompress|d(false)

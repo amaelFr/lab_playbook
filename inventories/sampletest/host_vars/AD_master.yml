@@ -48,11 +48,44 @@ OUs_variable:
 
 shares:
   - name: testingininignini
-    namespace: testnamspacestest
-    # host: ad-master
-    type: dfs
     path: C:\sharing
+    rights:
+      full:
+      read:
+      change:
     # owner: Administrator
+
+
+# \\(host|domainName)\namespaceName\
+#                                   childShare\
+#                                   childFolder\
+DFSs:
+  - name: namespaceName
+    path: C:\DFSRoot\namespaceName
+    rights:
+      full:
+      read:
+      change:
+      deny:
+    childs:
+      - name: childShare
+        path:
+        # = if path or src check if c:\ or \\ network path 
+        childs:
+          - name: subChildShare
+            path:
+            rights:
+              full:
+              read:
+              change:
+              deny:
+          - name: subChildFolder
+            # childs:
+      - name: childFolder
+
+DFS_namespace
+DFS_folder
+DFS_share_folder
 
 folders:
   - path: 'C:\testing1\testing'
@@ -66,6 +99,18 @@ folders:
         inherit: ContainerInherit
         propagation: InheritOnly 
         rights: Read
+    childs:
+      - name: testSubFolder
+        # owner:
+        #   name: Administrator
+        #   recursive: true
+        # # owner: Administrator
+        # acl:
+        #   - user: Domain User
+        #     state: present
+        #     inherit: ContainerInherit
+        #     propagation: InheritOnly 
+        #     right: Read
 files:
   - sourceLocal: ../../inventories/files/test.zip
     destination: C:/testing1/testing/testfolder

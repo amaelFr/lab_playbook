@@ -1,29 +1,35 @@
 ---
+
+
 - name: Folders
   block:
-    - loop: "{{ folders }}"
-      loop_control:
-        loop_var: folder
-      win_file:
-        path: "{{ folder.path }}"
-        state: directory
-      when: ansible_facts['os_family'] == 'Windows'
+    - include: folder.yml
+    # - loop: "{{ folders }}"
+    #   loop_control:
+    #     loop_var: folder
+    #   win_file:
+    #     path: "{{ folder.path }}"
+    #     state: directory
+    #   when: ansible_facts['os_family'] == 'Windows'
   when: folders|d(False)
 
-- name: Files
-  block:
-    - loop: "{{ files }}"
-      loop_control:
-        loop_var: file
-      include: win/file.yml
-      when: ansible_facts['os_family'] == 'Windows'
-  when: files|d(False)
+- debug:
+    var: folders
 
-- name: set rights
-  block:
-    - loop: "{{ folders|d([]) + files|d([]) }}"
-      loop_control:
-        loop_var: rights_var
-      include: win/rights.yml
-      when: ansible_facts['os_family'] == 'Windows'
-  when: folders|d(False)
+# - name: Files
+#   block:
+#     - loop: "{{ files }}"
+#       loop_control:
+#         loop_var: file
+#       include: win/file.yml
+#       when: ansible_facts['os_family'] == 'Windows'
+#   when: files|d(False)
+
+# - name: set rights
+#   block:
+#     - loop: "{{ folders|d([]) + files|d([]) }}"
+#       loop_control:
+#         loop_var: rights_var
+#       include: win/rights.yml
+#       when: ansible_facts['os_family'] == 'Windows'
+#   when: folders|d(False)

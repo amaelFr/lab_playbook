@@ -1,0 +1,14 @@
+- block:
+    - set_fact:
+        DFSfolders_TMP: "{{ DFSfolders_futur_TMP|d(DFSfolders) }}"
+        DFSfolders_futur_TMP: []
+    - set_fact:
+        DFSfolders_futur_TMP: "{{ DFSfolder.childs|d([]) + DFSfolders_futur_TMP }}"
+        DFSfolders: "{{ DFSfolder.childs|d([]) + DFSfolders }}"
+      loop: "{{ DFSfolders_TMP }}"
+      loop_control:
+        loop_var: DFSfolder
+    - fail:
+      when: DFSfolders_futur_TMP != []
+  rescue:
+  - include_tasks: DFSfolder.yml

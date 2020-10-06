@@ -1,9 +1,21 @@
 ---
-- loop: "{{ shares }}"
-  loop_control:
-    loop_var: share
-  include: winShare.yml
-  when: ansible_facts['os_family'] == 'Windows'
+# - name: Shares
+#   block:
+#     - loop: "{{ shares }}"
+#       loop_control:
+#         loop_var: share
+#       include: win/shares.yml
+#       when: ansible_facts['os_family'] == 'Windows'
+#   when: shares|d(False)
+
+- name: DFSs
+  block:
+    - loop: "{{ DFSs }}"
+      loop_control:
+        loop_var: DFS
+      include: win/DFS.yml
+      when: ansible_facts['os_family'] == 'Windows'
+  when: DFSs|d(False)
 
 # - name: Default ping linux
 #   when: ansible_facts['os_family'] != 'Windows'

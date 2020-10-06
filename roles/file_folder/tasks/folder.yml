@@ -1,0 +1,14 @@
+- block:
+    - set_fact:
+        folders_TMP: "{{ folders_futur_TMP|d(folders) }}"
+        folders_futur_TMP: []
+    - set_fact:
+        folders_futur_TMP: "{{ folder.childs|d([]) + folders_futur_TMP }}"
+        folders: "{{ folder.childs|d([]) + folders }}"
+      loop: "{{ folders_TMP }}"
+      loop_control:
+        loop_var: folder
+    - fail:
+      when: folders_futur_TMP != []
+  rescue:
+  - include_tasks: folder.yml

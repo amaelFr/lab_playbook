@@ -51,8 +51,8 @@ firewall_personal_rules:
     state: present
 
 
-# interfaces:
-#   - name: vtnet2
-#     ip: 172.20.20.1
-#     subnet: 24
-#     zone: filan
+interfaces:
+  - name: vtnet2
+    ip: 172.20.20.1
+    subnet: 24
+    zone: filan

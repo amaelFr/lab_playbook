@@ -1,0 +1,16 @@
+- name: Check directory exists
+  win_file:
+    path: "{{ share.src|d(share.path) }}"
+    state: directory
+- name: SMB
+  win_share:
+    name: "{{ share.name }}"
+    description: "{{ share.desc|d('Share '+share.name+'default description') }}"
+    path: "{{ share.src|d(share.path) }}"
+    list: "{{ share.list|d(False) }}"
+    full: "{{ share.right.full|d(['Administrators' if ansible_facts['windows_domain'] == 'WORKGROUP' else 'Domain Admins'])|join(',') }}"
+    read: "{{ share.right.read|d(['Users' if ansible_facts['windows_domain'] == 'WORKGROUP' else 'Domain Users'])|join(',') }}"
+    change: "{{ share.right.change|d([])|join(',') }}"
+    deny: "{{ share.right.deny|d([])|join(',') }}"
+    encrypt: "{{ share.encrypt|d(True) }}"
+    caching_mode: "{{ share.catching|d('None') }}"

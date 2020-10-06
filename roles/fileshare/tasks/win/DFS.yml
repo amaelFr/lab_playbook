@@ -1,0 +1,18 @@
+- name: Install DFS feature if required
+  win_feature:
+    name: FS-DFS-Namespace
+    include_management_tools: yes
+    include_sub_features: yes
+    state: present
+- set_fact: DFS.path="C:\\DFSRoot\\{{DFS.name}}"
+  when: not DFS.path|d(False)
+- name: Create root share
+  include: share.yml
+  vars:
+    share: "{{ DFS }}"
+  when: DFS.path|regex_search('^[A-Z]:')
+- set_fact:
+    DFSfolders: "{{ DFS.childs|d([]) }}"
+- include: DFSfolder.yml
+- debug:
+    var: DFSfolders

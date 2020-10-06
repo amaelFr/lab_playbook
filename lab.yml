@@ -21,16 +21,15 @@
 #     - role: crivetimihai.virtualization.docker
     # - andrewrothstein.docker-compose
 
-- hosts: all
-  roles:
-    - file_folder
-
 # - hosts: all
-#   tasks:
-#     - name: fileshare
-#       include_role:
-#         name: fileshare
-#       when: shares|d(False)
+#   roles:
+#     - file_folder
+
+- hosts: all
+  tasks:
+    - name: fileshare
+      include_role:
+        name: fileshare
 
 # - hosts: logging
 #   roles:

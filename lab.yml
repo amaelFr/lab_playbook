@@ -6,9 +6,9 @@
 #     - firewall
 #   gather_facts: no
 
-# - hosts: AD
-#   roles:
-#     - AD
+- hosts: AD
+  roles:
+    - AD
 
 # - import_playbook: subPlaybook/setDNS.yml
 

@@ -8,14 +8,22 @@
 #       when: ansible_facts['os_family'] == 'Windows'
 #   when: shares|d(False)
 
-- name: DFSs
-  block:
-    - loop: "{{ DFSs }}"
-      loop_control:
-        loop_var: DFS
-      include: win/DFS.yml
-      when: ansible_facts['os_family'] == 'Windows'
-  when: DFSs|d(False)
+- name: Install DFS feature if required
+  win_feature:
+    name: FS-DFS-Namespace
+    include_management_tools: yes
+    include_sub_features: yes
+    state: present
+  when: ansible_facts['os_family'] == 'Windows'
+
+# - name: DFSs
+#   block:
+#     - loop: "{{ DFSs }}"
+#       loop_control:
+#         loop_var: DFS
+#       include: win/DFS.yml
+#       when: ansible_facts['os_family'] == 'Windows'
+#   when: DFSs|d(False)
 
 # - name: Default ping linux
 #   when: ansible_facts['os_family'] != 'Windows'

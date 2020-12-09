@@ -3,6 +3,7 @@
   register: out
 - set_fact:
     out: "{{ out.stdout|from_json }}"
+  when: out.stdout|d("") != ""
 - fail:
     msg: "Error can't get parent OU {{ OU_var.parent }}"
   when: out is not mapping or not out.DistinguishedName|d(False)

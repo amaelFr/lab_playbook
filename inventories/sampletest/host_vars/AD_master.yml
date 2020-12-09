@@ -1,6 +1,6 @@
-ansible_host: 192.168.29.183
+ansible_host: 192.168.29.186
 
-ansible_host_tmp: 192.168.29.183
+ansible_host_tmp: 192.168.29.186
 
 hostname: ad-master
 
@@ -8,35 +8,34 @@ interfaces:
   - name: Ethernet0
     gateway: 192.168.29.2
 
-AD_users:
-  - users_variable
+# AD_users:
+#   - users_variable
 
-users_variable:
-  # - name: OUBase
-  - name: testU
-    surname: testtttt
-    city: washington
-    groups:
-     - testGroup
-    mail: test@mail.com
-    OU: test1
+# users_variable:
+#   # - name: OUBase
+#   - name: testU
+#     surname: testtttt
+#     city: washington
+#     groups:
+#      - testGroup
+#     mail: test@mail.com
+#     OU: test1
 
-AD_groups:
-  - groups_variable
+# AD_groups:
+#   - groups_variable
 
-groups_variable:
-  # - name: OUBase
-  - name: testGroup
-    OU: test1
-  - name: testGroupBase
-    # OU: test1
+# groups_variable:
+#   # - name: OUBase
+#   - name: testGroup
+#     OU: test1
+#   - name: testGroupBase
+#     # OU: test1
 
 AD_OUs:
   - OUs_variable
 OUs_variable:
   # - name: OUBase
   - name: OUInsideBase
-    parent: test1
   - name: OUInsideBase2
     parent: OUInsideBase
   #   parents:
@@ -46,82 +45,79 @@ OUs_variable:
   #     - OUInsideBase
   #     - OUBase
 
-shares:
-  - name: testingininignini
-    path: C:\sharing
-    rights:
-      full:
-      read:
-      change:
-    # owner: Administrator
+# shares:
+#   - name: testingininignini
+#     path: C:\sharing
+#     rights:
+#       full:
+#       read:
+#       change:
+#     # owner: Administrator
 
 
-# \\(host|domainName)\namespaceName\
-#                                   childShare\
-#                                   childFolder\
-DFSs:
-  - name: namespaceName
-    path: C:\DFSRoot\namespaceName
-    rights:
-      full:
-      read:
-      change:
-      deny:
-    childs:
-      - name: childShare
-        path:
-        # = if path or src check if c:\ or \\ network path 
-        childs:
-          - name: subChildShare
-            path:
-            rights:
-              full:
-              read:
-              change:
-              deny:
-          - name: subChildFolder
-            # childs:
-      - name: childFolder
+# # \\(host|domainName)\namespaceName\
+# #                                   childShare\
+# #                                   childFolder\
+# DFSs:
+#   - name: namespaceName
+#     path: C:\DFSRoot\namespaceName
+#     rights:
+#       full:
+#       read:
+#       change:
+#       deny:
+#     childs:
+#       - name: childShare
+#         path:
+#         # = if path or src check if c:\ or \\ network path 
+#         childs:
+#           - name: subChildShare
+#             path:
+#             rights:
+#               full:
+#               read:
+#               change:
+#               deny:
+#           - name: subChildFolder
+#             # childs:
+#       - name: childFolder
 
-DFS_namespace
-DFS_folder
-DFS_share_folder
 
-folders:
-  - path: 'C:\testing1\testing'
-    owner:
-      name: Administrator
-      recurse: true
-    # owner: Administrator
-    acls:
-      - user: Users #Domain User
-        state: present
-        inherit: ContainerInherit
-        propagation: InheritOnly 
-        rights: Read
-    childs:
-      - name: testSubFolder
-        # owner:
-        #   name: Administrator
-        #   recursive: true
-        # # owner: Administrator
-        # acl:
-        #   - user: Domain User
-        #     state: present
-        #     inherit: ContainerInherit
-        #     propagation: InheritOnly 
-        #     right: Read
-files:
-  - sourceLocal: ../../inventories/files/test.zip
-    destination: C:/testing1/testing/testfolder
-    uncompress: true
-    owner:
-      name: Administrator
-      recurse: true
-    # owner: Administrator
-    acls:
-      - user: Users
-        state: present
-        inherit: ContainerInherit
-        propagation: InheritOnly 
-        rights: Read
+# folders:
+#   - path: 'C:\testing1\testing'
+#     owner:
+#       name: Administrator
+#       recurse: true
+#     # owner: Administrator
+#     acls:
+#       - user: Users #Domain User
+#         state: present
+#         inherit: ContainerInherit
+#         propagation: InheritOnly 
+#         rights: Read
+#     childs:
+#       - name: testSubFolder
+#         # owner:
+#         #   name: Administrator
+#         #   recursive: true
+#         # # owner: Administrator
+#         # acl:
+#         #   - user: Domain User
+#         #     state: present
+#         #     inherit: ContainerInherit
+#         #     propagation: InheritOnly 
+#         #     right: Read
+# files:
+#   - sourceLocal: ../../inventories/files/test.zip
+#     destination: C:/testing1/testing/testfolder
+#     uncompress: true
+#     owner:
+#       name: Administrator
+#       recurse: true
+#     # owner: Administrator
+#     acls:
+#       - user: Users
+#         state: present
+#         inherit: ContainerInherit
+#         propagation: InheritOnly 
+#         rights: Read

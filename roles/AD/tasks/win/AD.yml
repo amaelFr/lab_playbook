@@ -40,47 +40,47 @@
 #     timeout: 500
 #   when: ad0.changed or ad1.changed
 
-# - name: Prepare Organizational Units variable
-#   block:
-#     - set_fact:
-#         AD_OUs_to_set: "{{ AD_OUs }}"
-#       when: AD_OUs[0] is mapping
-#     - set_fact:
-#         AD_OUs_to_set: "{{ AD_OUs_to_set|d([]) + lookup('vars', alias)|d([]) }}"
-#       loop: "{{ AD_OUs  }}"
-#       loop_control:
-#         loop_var: alias
-#       when: AD_OUs[0] is string
-#   when: AD_OUs|d([])|length>0
+- name: Prepare Organizational Units variable
+  block:
+    - set_fact:
+        AD_OUs_to_set: "{{ AD_OUs }}"
+      when: AD_OUs[0] is mapping
+    - set_fact:
+        AD_OUs_to_set: "{{ AD_OUs_to_set|d([]) + lookup('vars', alias)|d([]) }}"
+      loop: "{{ AD_OUs  }}"
+      loop_control:
+        loop_var: alias
+      when: AD_OUs[0] is string
+  when: AD_OUs|d([])|length>0
 
-# - name: Create OU
-#   include: OU.yml
-#   loop: "{{ AD_OUs_to_set }}"
-#   loop_control:
-#     loop_var: OU
-#   when: AD_OUs_to_set|d(False)
+- name: Create OU
+  include: OU.yml
+  loop: "{{ AD_OUs_to_set }}"
+  loop_control:
+    loop_var: OU
+  when: AD_OUs_to_set|d(False)
 
 
 
-# - name: Prepare Groups variable
-#   block:
-#     - set_fact:
-#         AD_groups_to_set: "{{ AD_groups }}"
-#       when: AD_groups[0] is mapping
-#     - set_fact:
-#         AD_groups_to_set: "{{ AD_groups_to_set|d([]) + lookup('vars', alias)|d([]) }}"
-#       loop: "{{ AD_groups }}"
-#       loop_control:
-#         loop_var: alias
-#       when: AD_groups[0] is string
-#   when: AD_groups|d([])|length>0
+- name: Prepare Groups variable
+  block:
+    - set_fact:
+        AD_groups_to_set: "{{ AD_groups }}"
+      when: AD_groups[0] is mapping
+    - set_fact:
+        AD_groups_to_set: "{{ AD_groups_to_set|d([]) + lookup('vars', alias)|d([]) }}"
+      loop: "{{ AD_groups }}"
+      loop_control:
+        loop_var: alias
+      when: AD_groups[0] is string
+  when: AD_groups|d([])|length>0
 
-# - name: Create AD_group
-#   include: group.yml
-#   loop: "{{ AD_groups_to_set }}"
-#   loop_control:
-#     loop_var: AD_group
-#   when: AD_groups_to_set|d(False)
+- name: Create AD_group
+  include: group.yml
+  loop: "{{ AD_groups_to_set }}"
+  loop_control:
+    loop_var: AD_group
+  when: AD_groups_to_set|d(False)
 
 - name: Prepare Users variable
   block:

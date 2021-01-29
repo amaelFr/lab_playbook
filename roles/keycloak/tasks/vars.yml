@@ -1,0 +1,62 @@
+- name: Set non necessary variable
+  block:
+    - set_fact:
+        keycloak_auth_url: http://{{ansible_host}}/auth
+      when: keycloak_auth_url is not defined
+    - set_fact:
+        keycloak_auth_client: admin-cli
+      when: keycloak_auth_client is not defined
+    - set_fact:
+        keycloak_auth_realm: master
+      when: keycloak_auth_realm is not defined
+
+    - name: keycloak_realm
+      block:
+        - set_fact:
+            keycloak_realm: "{{ [] }}"
+          when: keycloak_realm is not defined
+        - set_fact:
+            keycloak_realm: "{{ [ { 'name': {{ keycloak_realm }} } ] }}"
+          when: keycloak_realm is string
+        - set_fact:
+            keycloak_realm: "{{ [ keycloak_realm ] }}"
+          when: keycloak_realm is mapping
+
+- name: Check keycloak_user, keycloak_password
+  fail:
+    msg: Error variable the following variable must be defined and string keycloak_user, keycloak_password
+  when: keycloak_user is not defined or keycloak_user is not string or keycloak_password is not defined or keycloak_password is not string
+
+- name: Check keycloak_auth_url, keycloak_auth_realm
+  fail:
+    msg: Error variable must be a string keycloak_auth_url, keycloak_auth_realm
+  when: keycloak_auth_url is not string or keycloak_auth_realm is not string or keycloak_auth_client is not string
+
+- name: Check keycloak_realm is array
+  fail:
+    msg: Foolowing variable must be iterable keycloak_realm
+  when: keycloak_realm is not iterable
+
+- name: Check keycloak_realm
+  when: keycloak_realm|d(False)
+  block:
+    - fail:
+        msg: > 
+          Variable inside keycloak_realm must be
+              str for: name
+              absent|present: state
+              list, mapping or string: client, client_scopes roles, authentication, users, groups
+              list, mapping: identity_providers, user_federations
+      when: >
+        item['name']|d(False) and item['name'] is not string or
+        item['state']|d(False) and ( item['state'] != 'absent' or item['state'] != 'present' ) or
+        item['identity_providers']|d(False) and ( item['identity_providers'] is not iterable or item['identity_providers'] is string ) or
+        item['user_federations']|d(False) and ( item['user_federations'] is not iterable or item['user_federations'] is string ) or
+        item['clients']|d(False) and item['clients'] is not iterable or
+        item['client_scopes']|d(False) and item['client_scopes'] is not iterable or
+        item['roles']|d(False) and item['roles'] is not iterable or
+        item['authentication']|d(False) and item['authentication'] is not iterable or
+        item['users']|d(False) and item['users'] is not iterable or
+        item['groups']|d(False) and item['groups'] is not iterable
+      loop: "{{ keycloak_realm }}"
+

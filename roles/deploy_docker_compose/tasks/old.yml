@@ -1,0 +1,20 @@
+
+# - name: Run command to obtain docker-compose config
+#   command: docker-compose -f {{ files | join(' -f ') }} config | tee /tmp/docker-compose.yml
+#   register: docker_compose_config
+#   args:
+#     chdir: ~/docker-stack-{{name}}
+# - set_fact:
+#     docker_compose_config: "{{ docker_compose_config['stdout'] | from_yaml }}"
+
+# # pip install docker-py
+# - name: 
+#   community.general.docker_compose:
+#     project_name: "{{ name }}"
+#     definition: "{{ docker_compose_config }}"
+#     remove_volumes: yes
+#     stopped: yes
+#     state: absent
+
+# - debug:
+#     msg: docker-compose -f {{ files | join(' -f ') }} down && docker-compose -f {{ files | join(' -f ') }} rm -f -v

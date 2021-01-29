@@ -1,0 +1,28 @@
+---
+- hosts:
+    - docker_compose
+  roles:
+    - role: deploy_docker_compose
+      vars:
+        src: ~/documents/docker-stack-test/
+        name: freeipa
+        files:
+          # - keycloak/docker-compose.yml
+          - ipa/docker-compose.yml
+        # command_before_build: ok
+        # command_on_build: ok
+        # command_build: ok
+        # command_before_start: ok
+        # command_on_start: ok
+        # command_start: ok
+        # command_after_start:
+          # - destination: local|machine/containeur name
+          #   specific_command_environment:
+          #     value: test
+          #   command: "string"
+          # - ls
+        # command_down: ok
+        # command_clean: ok
+        command_environment:
+          IPA_START_OPTION: --ip-address=192.168.29.234
+          IPA_INTERFACE: 192.168.29.234

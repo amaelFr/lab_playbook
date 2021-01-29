@@ -21,7 +21,7 @@ ISSI etc ... (TODO)
 6. Create directory structure, upload file (linux TODO)
 7. File share, (smb(win_share), dfs) TODO
 8. GPO, TODO (here to get the file share (necessary ?))
-9. tools
+9. tools (TODO)
     * ELK
     * SIEM
     * monitoring

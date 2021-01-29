@@ -1,0 +1,323 @@
+# {
+#   "name": "ldap",
+#   "providerId": "ldap",
+#   "providerType": "org.keycloak.storage.UserStorageProvider",
+#   "parentId": "thatistest",
+#   "config": {
+#     "enabled": [
+#       "true"
+#     ],
+#     "priority": [
+#       "0"
+#     ],
+#     "fullSyncPeriod": [
+#       "-1"
+#     ],
+#     "changedSyncPeriod": [
+#       "-1"
+#     ],
+#     "cachePolicy": [
+#       "DEFAULT"
+#     ],
+#     "evictionDay": [],
+#     "evictionHour": [],
+#     "evictionMinute": [],
+#     "maxLifespan": [],
+#     "batchSizeForSync": [
+#       "1000"
+#     ],
+#     "editMode": [
+#       "READ_ONLY"
+#     ],
+#     "importEnabled": [
+#       "true"
+#     ],
+#     "syncRegistrations": [
+#       "false"
+#     ],
+#     "vendor": [
+#       "rhds"
+#     ],
+#     "usePasswordModifyExtendedOp": [],
+#     "usernameLDAPAttribute": [
+#       "uid"
+#     ],
+#     "rdnLDAPAttribute": [
+#       "uid"
+#     ],
+#     "uuidLDAPAttribute": [
+#       "nsuniqueid"
+#     ],
+#     "userObjectClasses": [
+#       "inetOrgPerson, organizationalPerson"
+#     ],
+#     "connectionUrl": [
+#       "ldap://ipa"
+#     ],
+#     "usersDn": [
+#       "cn=users,cn=accounts,dc=cat,dc=local"
+#     ],
+#     "authType": [
+#       "simple"
+#     ],
+#     "startTls": [],
+#     "bindDn": [
+#       "uid=admin,cn=users,cn=accounts,dc=cat,dc=local"
+#     ],
+#     "bindCredential": [
+#       "V@grant1"
+#     ],
+#     "customUserSearchFilter": [],
+#     "searchScope": [
+#       "1"
+#     ],
+#     "validatePasswordPolicy": [
+#       "false"
+#     ],
+#     "trustEmail": [
+#       "false"
+#     ],
+#     "useTruststoreSpi": [
+#       "ldapsOnly"
+#     ],
+#     "connectionPooling": [
+#       "true"
+#     ],
+#     "connectionPoolingAuthentication": [],
+#     "connectionPoolingDebug": [],
+#     "connectionPoolingInitSize": [],
+#     "connectionPoolingMaxSize": [],
+#     "connectionPoolingPrefSize": [],
+#     "connectionPoolingProtocol": [],
+#     "connectionPoolingTimeout": [],
+#     "connectionTimeout": [],
+#     "readTimeout": [],
+#     "pagination": [
+#       "true"
+#     ],
+#     "allowKerberosAuthentication": [
+#       "false"
+#     ],
+#     "serverPrincipal": [],
+#     "keyTab": [],
+#     "kerberosRealm": [],
+#     "debug": [
+#       "false"
+#     ],
+#     "useKerberosForPasswordAuthentication": [
+#       "false"
+#     ]
+#   }
+# }
+
+
+
+# {
+#   "name": "kerberos_prov",
+#   "providerId": "kerberos",
+#   "providerType": "org.keycloak.storage.UserStorageProvider",
+#   "parentId": "thatistest",
+#   "config": {
+#     "priority": [
+#       "0"
+#     ],
+#     "enabled": [
+#       "true"
+#     ],
+#     "cachePolicy": [
+#       "DEFAULT"
+#     ],
+#     "evictionDay": [],
+#     "evictionHour": [],
+#     "evictionMinute": [],
+#     "maxLifespan": [],
+#     "kerberosRealm": [
+#       "IPA.LOCAL"
+#     ],
+#     "serverPrincipal": [
+#       "ipa"
+#     ],
+#     "keyTab": [
+#       "/etc/krb5-keycloak.keytab"
+#     ],
+#     "debug": [
+#       "false"
+#     ],
+#     "allowPasswordAuthentication": [
+#       "false"
+#     ],
+#     "editMode": [],
+#     "updateProfileFirstLogin": [
+#       "false"
+#     ]
+#   }
+# }
+
+- set_fact:
+    json_user_federation: >
+      {{
+        {
+          "name": user_federation['name']|d(user_federation['type'])|d('ldap'),
+          "providerId": user_federation['type']|d('ldap'),
+          "providerType": "org.keycloak.storage.UserStorageProvider",
+          "parentId": realm['name']|d('master')|lower|replace(' ','_'),
+          "config": {
+            "importEnabled": [
+              "true"
+            ],
+            "syncRegistrations": [
+              "false"
+            ],
+            "vendor": [
+              "rhds"
+            ],
+            "usernameLDAPAttribute":["uid"],"rdnLDAPAttribute":["uid"],"uuidLDAPAttribute":["nsuniqueid"],"userObjectClasses":["inetOrgPerson, organizationalPerson"],
+            "connectionUrl": [
+              user_federation['connectionServer']
+            ],
+            "usersDn": [
+              user_federation['usersDn']
+            ],
+            "authType": [
+              "simple"
+            ],
+            "bindDn": [
+              user_federation['bindDn']
+            ],
+            "bindCredential": [
+              user_federation['bindCredential']
+            ]
+          }
+        }
+      }}
+
+# - debug:
+#     var: json_user_federation
+# {{ {
+#   'name': user_federation['name']|d(user_federation['type']|d('ldap')),
+#   'providerId': user_federation['name']|d(user_federation['type']|d('ldap'))|lower|replace(' ','_'),
+#   'providerType': 'org.keycloak.storage.UserStorageProvider',
+#   'parentId': realm['name']|d('master')|lower|replace(' ','_'),
+#   'config': {
+#     'enabled': [
+#       'true'
+#     ],
+#     'priority': [
+#       '0'
+#     ],
+#     'fullSyncPeriod': [
+#       '-1'
+#     ],
+#     'changedSyncPeriod': [
+#       '-1'
+#     ],
+#     'cachePolicy': [
+#       'DEFAULT'
+#     ],
+#     'evictionDay': [],
+#     'evictionHour': [],
+#     'evictionMinute': [],
+#     'maxLifespan': [],
+#     'batchSizeForSync': [
+#       '1000'
+#     ],
+#     'editMode': [
+#       'READ_ONLY'
+#     ],
+#     'importEnabled': [
+#       'true'
+#     ],
+#     'syncRegistrations': [
+#       'false'
+#     ],
+#     'vendor': [
+#       'rhds'
+#     ],
+#     'usePasswordModifyExtendedOp': [],
+#     'usernameLDAPAttribute': [
+#       'uid'
+#     ],
+#     'rdnLDAPAttribute': [
+#       'uid'
+#     ],
+#     'uuidLDAPAttribute': [
+#       'nsuniqueid'
+#     ],
+#     'userObjectClasses': [
+#       'inetOrgPerson, organizationalPerson'
+#     ],
+#     'connectionUrl': [
+#       user_federation['server']
+#     ],
+#     'usersDn': [
+#       user_federation['usersDn']
+#     ],
+#     'authType': [
+#       'simple'
+#     ],
+#     'startTls': [],
+#     'bindDn': [
+#       user_federation['bindDn']
+#     ],
+#     'bindCredential': [
+#       user_federation['bindCredential']
+#     ],
+#     'customUserSearchFilter': [],
+#     'searchScope': [
+#       '1'
+#     ],
+#     'validatePasswordPolicy': [
+#       'false'
+#     ],
+#     'trustEmail': [
+#       'false'
+#     ],
+#     'useTruststoreSpi': [
+#       'ldapsOnly'
+#     ],
+#     'connectionPooling': [
+#       'true'
+#     ],
+#     'connectionPoolingAuthentication': [],
+#     'connectionPoolingDebug': [],
+#     'connectionPoolingInitSize': [],
+#     'connectionPoolingMaxSize': [],
+#     'connectionPoolingPrefSize': [],
+#     'connectionPoolingProtocol': [],
+#     'connectionPoolingTimeout': [],
+#     'connectionTimeout': [],
+#     'readTimeout': [],
+#     'pagination': [
+#       'true'
+#     ],
+#     'allowKerberosAuthentication': [
+#       'false'
+#     ],
+#     'serverPrincipal': [],
+#     'keyTab': [],
+#     'kerberosRealm': [],
+#     'debug': [
+#       'false'
+#     ],
+#     'useKerberosForPasswordAuthentication': [
+#       'false'
+#     ]
+#   }
+# } }}
+
+
+- name: On Realm {{ realm['name']|d('master') }} create User federation {{ realm['name']|d(realm['type']|d('ldap')) }} for service Keycloak
+  uri:
+    url: "{{ keycloak_auth_url }}/admin/realms/{{ realm['name']|d('master')|lower|replace(' ','_') }}/components"
+    method: POST
+    # src: "{{ keycloak_realm_data_file }}"
+    remote_src: no
+    body: "{{ json_user_federation | to_json }}"
+    status_code:
+     - 201
+    headers:
+      Content-type: application/json
+      Accept: application/json
+      Authorization: Bearer {{ keycloak_token.json.access_token }}
+  register: keycloak_userfederation_create
+  # when: keycloak_realm_exists.status == 404

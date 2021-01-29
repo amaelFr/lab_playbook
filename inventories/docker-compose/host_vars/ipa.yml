@@ -1,0 +1,2 @@
+ansible_connection: docker
+# ansible_docker_extra_args: "-H=ssh://192.168.5.128:22"

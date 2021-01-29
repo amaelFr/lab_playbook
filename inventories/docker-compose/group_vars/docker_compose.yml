@@ -1,0 +1,9 @@
+ansible_host:
+
+OUS:
+  - OUS_variable
+OUS_variable:
+  - name: OUBase
+  - name: OUInsideBase
+    parents:
+      - OUBase

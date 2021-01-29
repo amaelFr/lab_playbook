@@ -1,0 +1,34 @@
+#  <-- tasks file can include smaller files if warranted
+---
+
+
+# - role: keycloak
+#   vars:
+#     keycloak_user: keycloak
+#     keycloak_password: keycloak
+#     # keycloak_client_id: admin-cli
+#     keycloak_auth_url: https://{{ansible_host}}:8080/auth
+#     # keycloak_auth_realm: master
+#     # keycloak_realm:
+#     #   - name: def master
+#     #     state: def present, abst
+#     #     clients: def [{}, str]
+#     #     client_scopes: def [{},str]
+#     #     roles: def [{}, str]
+#     #     identity_providers: def [{}]
+#     #     user_federations: def [{}] # ldap
+#     #     authentication: def [{}, str]
+#     #     groups: def [{},str]
+#     #     users: def [{},str]
+
+
+- import_tasks: vars.yml
+
+
+- name: Loop to keycloak realm
+  include_tasks: realm.yml
+  loop: "{{ keycloak_realm }}"
+  loop_control:
+    loop_var: realm
+  when: keycloak_realm|d(False)
+

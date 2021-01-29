@@ -1,0 +1,45 @@
+---
+- hosts:
+    - keycloak
+  roles:
+    - role: keycloak
+      vars:
+        keycloak_user: keycloak
+        keycloak_password: keycloak
+        # keycloak_auth_client: admin-cli
+        keycloak_auth_url: http://{{ansible_host}}:8080/
+        # keycloak_auth_realm: master
+        keycloak_realm:
+          # - name: test
+          - name: thatistest
+            user_federation:
+              - name: testtldap
+                # type: ldap/kerberos
+                connectionServer: ldap://ipa
+                usersDn: cn=users,cn=accounts,dc=cat,dc=local
+                bindDn: uid=admin,cn=users,cn=accounts,dc=cat,dc=local
+                bindCredential: V@grant1
+
+        #   - name: def master
+        #     state: def present, abst
+        #     clients: def [{}, str]
+        #     client_scopes: def [{},str]
+        #     roles: def [{}, str]
+        #     identity_providers: def [{}]
+        #     user_federations: def [{}] # ldap
+        #     authentication: def [{}, str]
+        #     groups: def [{},str]
+        #     users: def [{},str]
+
+
+
+
+
+
+
+
+
+
+
+# https://github.com/ansible-collections/community.general/tree/main/plugins/modules/identity/keycloak
+# https://github.com/octo-technology/keycloak-collection

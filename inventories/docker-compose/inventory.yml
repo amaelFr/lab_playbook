@@ -1,0 +1,12 @@
+all:
+  hosts:
+  children:
+    pki:
+      hosts:
+        ipa:
+    keycloak:
+      hosts:
+        docker_compose_host:
+    docker_compose:
+      hosts:
+        docker_compose_host:

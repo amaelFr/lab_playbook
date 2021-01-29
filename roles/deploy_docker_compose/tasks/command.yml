@@ -1,0 +1,10 @@
+- name: execute local command
+  environment: "{{ command_environment|d({}) | combine((item['specific_command_environment']|d({})) if item is mapping else {}) }}"
+  command: "{{ item['command'] if item is mapping else item }}"
+  args:
+    chdir: ~/docker-stack-{{name}}
+  when: item is string or 'destination' not in item or item['destination']=="local" or item['destination']=="machine"
+- name: execute container command
+  fail:
+    msg: docker compose exec must be implemented
+  when: item is not string and 'destination' in item and item['destination']!="local" and item['destination']!="machine"

@@ -10,6 +10,8 @@ collections:
   ## AD 
   - amtega.win_domain_ous #OrganizationalUnits
 
+  - freeipa.ansible_freeipa
+
   # - crivetimihai.virtualization
   # - inverse_inc.windows
   # - gantsign.kompose

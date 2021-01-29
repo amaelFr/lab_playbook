@@ -58,10 +58,10 @@ fi
 
 RELATIVEPATHKUBE=$(realpath --relative-to="$PATHKUBE/$NAME" "$INV/")
 
-( cd $PATHKUBE/$NAME && \
-# mkdir group_vars && \
+( cd $PATHKUBE/$NAME &&
+# mkdir group_vars &&
 ln -s $RELATIVEPATHKUBE/host_vars host_vars )
-# ln -s $RELATIVEPATHKUBE/group_vars group_vars && \
+# ln -s $RELATIVEPATHKUBE/group_vars group_vars &&
 
 echo "all:
   hosts:

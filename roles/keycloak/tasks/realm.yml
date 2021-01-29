@@ -1,0 +1,82 @@
+---
+- name: Create Token for service Keycloak
+  uri:
+    url: "{{ keycloak_auth_url }}/realms/{{ keycloak_auth_realm }}/protocol/openid-connect/token"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      username: "{{ keycloak_user }}"
+      password: "{{ keycloak_password }}"
+      grant_type: "password"
+      client_id: "{{ keycloak_auth_client }}"
+  register: keycloak_token
+
+- name: Find out, if Realm {{ realm['name']|d('master') }} for service Keycloak exists
+  uri:
+    url: "{{ keycloak_auth_url }}/admin/realms/{{ realm['name']|d('master')|lower|replace(' ','_') }}"
+    method: GET
+    status_code:
+     - 200
+     - 404
+    headers:
+      Accept: application/json
+      Authorization: Bearer {{ keycloak_token.json.access_token }}
+  register: keycloak_realm_exists
+
+- set_fact:
+    json_realm: >
+      {{ {
+        'id': realm['name']|d('master')|lower|replace(' ','_'),
+        'realm': realm['name']|d('master')|lower|replace(' ','_'),
+        'displayName': realm['name']|d('master'),
+        'enabled': realm['enable']|d(True),
+        'resetPasswordAllowed': realm['resetPasswordAllow']|d(True),
+        'bruteForceProtected': realm['bruteForceProtected']|d(True)
+      } }}
+
+# {{ {
+#   'id': realm['name']|d('master')|lower|replace(' ','_'),
+#   'realm': realm['name']|d('master')|lower|replace(' ','_'),
+#   'displayName': realm['name']|d('master'),
+#   'enabled': realm['enable']|d(True)
+#   'sslRequired': 'external',
+#   'registrationAllowed': false,
+#   'loginWithEmailAllowed': true,
+#   'duplicateEmailsAllowed': false,
+#   'resetPasswordAllowed': realm['resetPasswordAllow']|d(True),
+#   'editUsernameAllowed': false,
+#   'bruteForceProtected': realm['bruteForceProtected']|d(True)
+# } }}
+
+- name: Create Realm {{ realm['name']|d('master') }} for service Keycloak
+  uri:
+    url: "{{ keycloak_auth_url }}/admin/realms"
+    method: POST
+    # src: "{{ keycloak_realm_data_file }}"
+    remote_src: no
+    body: "{{ json_realm | to_json }}"
+    status_code:
+     - 201
+    headers:
+      Content-type: application/json
+      Accept: application/json
+      Authorization: Bearer {{ keycloak_token.json.access_token }}
+  register: keycloak_realm_create
+  when: keycloak_realm_exists.status == 404
+
+# - name: Create Realm {{ realm['name']|d('master') }} for service Keycloak
+#   inspq.keycloak.keycloak_realm:
+#   # keycloak.octo.keycloak_realm:
+#     realm: thatIsModuleTest
+#     url: http://127.0.0.1:8080
+#     username: keycloak
+#     password: keycloak
+#     state : present
+
+# - name: Loop throw realm userfederation
+#   include_tasks: userFederation.yml
+#   loop: "{{ realm['user_federation'] }}"
+#   loop_control:
+#     loop_var: user_federation
+#   when: realm['user_federation']|d(False)
+

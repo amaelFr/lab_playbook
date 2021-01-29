@@ -1,0 +1,91 @@
+- name: Error some vars are undefined
+  when: not ( name|d(False) and src|d(False) )
+  fail:
+    msg: "Error some required variable are not defined name, src"
+
+- name: Error some vars have a wrong type must be str
+  when: ( command_build is defined and command_build is not string ) or ( command_start is defined and command_start is not string ) or (command_down is defined and command_down is not string) or (command_clean is defined and command_clean is not string)
+  fail:
+    msg: "Error some variable enter are not string: command_build, command_start, command_down, command_down, command_clean"
+
+- name: Error some vars have wrong type must be mapping {}
+  when: command_environment is defined and command_environment is not mapping
+  fail:
+    msg: "Error some variable enter are not mapping: command_environment"
+
+- name: Set required variables
+  block:
+    - block: # Set files variable
+        - set_fact:
+            files: -f {{ files }}
+          when: ( files is defined ) and ( files is string )
+        - set_fact:
+            files: -f {{ files | join(' -f ') }}
+          when: ( files is defined ) and ( files is not mapping ) and ( files is iterable ) and ( files is not string )
+        - set_fact:
+            files: ""
+          when: files is not defined
+    - block: # Set command_before_build variable
+        - set_fact:
+            command_before_build: "{{ [ command_before_build ] }}"
+          when: ( command_before_build is defined ) and ( command_before_build is string )
+        - set_fact:
+            command_before_build: []
+          when: command_before_build is not defined
+    - block: # Set command_on_build variable
+        - set_fact:
+            command_on_build: "{{ [ command_on_build ] }}"
+          when: ( command_on_build is defined ) and ( command_on_build is string )
+        - set_fact:
+            command_on_build: []
+          when: command_on_build is not defined
+        - set_fact:
+            command_on_build: "{{ command_on_build + [ command_build|d('docker-compose -p '+name+' '+files+' build --pull --parallel') ] }}"
+    - block: # Set command_before_start variable
+        - set_fact:
+            command_before_start: "{{ [ command_before_start ] }}"
+          when: ( command_before_build is defined ) and ( command_before_start is string )
+        - set_fact:
+            command_before_start: []
+          when: command_before_start is not defined
+    - block: # Set command_on_start variable
+        - set_fact:
+            command_on_start: "{{ [ command_on_start ] }}"
+          when: ( command_on_start is defined ) and ( command_on_start is string )
+        - set_fact:
+            command_on_start: []
+          when: command_on_start is not defined
+        - set_fact:
+            command_on_start: "{{ command_on_start + [ command_start|d('docker-compose -p '+name+' '+files+' up --detach # --remove-orphans --renew-anon-volumes') ] }}"
+    - block: # Set command_after_start variable
+        - set_fact:
+            command_after_start: "{{ [ { 'destination':'local', 'command': command_after_start } ] }}"
+          when: ( command_after_start is defined ) and ( command_after_start is string )
+        - set_fact:
+            command_after_start: "{{ [ command_after_start ] }}"
+          when: ( command_after_start is defined ) and ( command_after_start is mapping )
+        - set_fact:
+            command_after_start: []
+          when: command_after_start is not defined
+
+# If command_after_start not array of mapping
+
+- name: Error some vars are have no a required type string or list
+  when: >
+    (command_before_build is not iterable) or (command_before_build is mapping) or
+    (command_on_build is not iterable) or (command_on_build is mapping) or
+    (command_before_start is not iterable) or (command_before_start is mapping) or
+    (command_on_start is not iterable) or (command_on_start is mapping) or
+    (command_after_start is not iterable) or (command_after_start is mapping)
+  fail:
+    msg: "Error some vars are have no a required type string or list: command_before_build, command_on_build, command_before_start, command_on_start, command_after_start"
+
+- name: Error command_after_start do not contain a valid mapping
+  fail:
+    msg: "Error command_after_start contain an invalid value string or mapping containing command"
+  when: > 
+    item is not string and item is mapping and
+    ( 'command' not in item and item['command'] is not string or 
+      'destination' not in item and item['destination'] is not string or
+      'specific_command_environment' in item and item['specific_command_environment'] is not mapping)
+  loop: "{{ command_after_start }}"

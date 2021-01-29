@@ -1,0 +1,97 @@
+---
+
+############################### role exemple
+# - hosts:
+#     - docker_compose
+#   roles:
+#     - role: deploy_docker_compose
+#       vars:
+#         src: ~/documents/docker-stack-test/
+#         name: freeipa
+#         files:
+#           - keycloak/docker-compose.yml
+#           - ipa/docker-compose.yml
+#         command_before_build:
+#         command_on_build:
+#         command_build:
+#         command_before_start:
+#         command_on_start:
+#         command_start:
+#         command_after_start:
+#           - destination: local|machine/containeur name
+#             specific_command_environment:
+#               envar: overight
+#             command: "string"
+#           - ls
+#         command_down:
+#         command_clean:
+#         command_environment:
+#           envvar: value
+#           envvar1: value
+
+
+
+
+- name: Error if windows OS
+  when: ansible_facts['os_family'] == 'Windows'
+  fail:
+    msg: "Error the following role will only work for non windows system"
+
+# Check and set variables
+- import_tasks: vars.yml
+
+- name: Copy docker-compose files
+  copy:
+    src: "{{src}}"
+    dest: ~/docker-stack-{{name}}
+    mode: 0750
+
+# Command instruction with same environment variables
+- name: Instruction inside same environment
+  environment: "{{ command_environment|d({}) }}"
+  block:
+    - name: Delete last stack
+      block:
+        - name: "{{ command_down|d('docker-compose -p '+name+' '+files+' down --remove-orphans --volumes #--rmi all') }}"
+          command: "{{ command_down|d('docker-compose -p '+name+' '+files+' down --remove-orphans --volumes #--rmi all') }}"
+          args:
+            chdir: ~/docker-stack-{{name}}
+        - name: "{{ command_clean|d('docker-compose -p '+name+' '+files+' rm -f -v') }}"
+          command: "{{ command_clean|d('docker-compose -p '+name+' '+files+' rm -f -v') }}"
+          args:
+            chdir: ~/docker-stack-{{name}}
+
+    - name: "Command before build stack: {{ item }}"
+      command: "{{ item }}"
+      args:
+        chdir: ~/docker-stack-{{name}}
+      loop: "{{ command_before_build }}"
+
+    - name: "Build stack: {{ command_on_build|join(' && ') }}"
+      command: "{{ command_on_build|join(' && ') }}"
+      args:
+        chdir: ~/docker-stack-{{name}}
+
+    - name: "Command before start stack: {{ item }}"
+      command: "{{ item }}"
+      args:
+        chdir: ~/docker-stack-{{name}}
+      loop: "{{ command_before_start }}"
+
+    - name: "Start stack: {{ command_on_start|join(' && ') }}"
+      debug:
+        msg: "{{ command_on_start|join(' && ') }}"
+    #   command: "{{ command_on_start|join(' && ') }}"
+    #   args:
+    #     chdir: ~/docker-stack-{{name}}
+
+# - name: Command after start stack
+#   include_tasks: command.yml
+#   loop: "{{ command_after_start }}"
+
+
+
+# - name: Clean artifact path
+#   file:
+#     state: absent
+#     path: ~/docker-stack-{{name}}

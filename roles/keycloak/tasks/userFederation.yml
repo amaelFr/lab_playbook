@@ -193,123 +193,13 @@
 
 # - debug:
 #     var: json_user_federation
-# {{ {
-#   'name': user_federation['name']|d(user_federation['type']|d('ldap')),
-#   'providerId': user_federation['name']|d(user_federation['type']|d('ldap'))|lower|replace(' ','_'),
-#   'providerType': 'org.keycloak.storage.UserStorageProvider',
-#   'parentId': realm['name']|d('master')|lower|replace(' ','_'),
-#   'config': {
-#     'enabled': [
-#       'true'
-#     ],
-#     'priority': [
-#       '0'
-#     ],
-#     'fullSyncPeriod': [
-#       '-1'
-#     ],
-#     'changedSyncPeriod': [
-#       '-1'
-#     ],
-#     'cachePolicy': [
-#       'DEFAULT'
-#     ],
-#     'evictionDay': [],
-#     'evictionHour': [],
-#     'evictionMinute': [],
-#     'maxLifespan': [],
-#     'batchSizeForSync': [
-#       '1000'
-#     ],
-#     'editMode': [
-#       'READ_ONLY'
-#     ],
-#     'importEnabled': [
-#       'true'
-#     ],
-#     'syncRegistrations': [
-#       'false'
-#     ],
-#     'vendor': [
-#       'rhds'
-#     ],
-#     'usePasswordModifyExtendedOp': [],
-#     'usernameLDAPAttribute': [
-#       'uid'
-#     ],
-#     'rdnLDAPAttribute': [
-#       'uid'
-#     ],
-#     'uuidLDAPAttribute': [
-#       'nsuniqueid'
-#     ],
-#     'userObjectClasses': [
-#       'inetOrgPerson, organizationalPerson'
-#     ],
-#     'connectionUrl': [
-#       user_federation['server']
-#     ],
-#     'usersDn': [
-#       user_federation['usersDn']
-#     ],
-#     'authType': [
-#       'simple'
-#     ],
-#     'startTls': [],
-#     'bindDn': [
-#       user_federation['bindDn']
-#     ],
-#     'bindCredential': [
-#       user_federation['bindCredential']
-#     ],
-#     'customUserSearchFilter': [],
-#     'searchScope': [
-#       '1'
-#     ],
-#     'validatePasswordPolicy': [
-#       'false'
-#     ],
-#     'trustEmail': [
-#       'false'
-#     ],
-#     'useTruststoreSpi': [
-#       'ldapsOnly'
-#     ],
-#     'connectionPooling': [
-#       'true'
-#     ],
-#     'connectionPoolingAuthentication': [],
-#     'connectionPoolingDebug': [],
-#     'connectionPoolingInitSize': [],
-#     'connectionPoolingMaxSize': [],
-#     'connectionPoolingPrefSize': [],
-#     'connectionPoolingProtocol': [],
-#     'connectionPoolingTimeout': [],
-#     'connectionTimeout': [],
-#     'readTimeout': [],
-#     'pagination': [
-#       'true'
-#     ],
-#     'allowKerberosAuthentication': [
-#       'false'
-#     ],
-#     'serverPrincipal': [],
-#     'keyTab': [],
-#     'kerberosRealm': [],
-#     'debug': [
-#       'false'
-#     ],
-#     'useKerberosForPasswordAuthentication': [
-#       'false'
-#     ]
-#   }
-# } }}
 
 
 - name: On Realm {{ realm['name']|d('master') }} create User federation {{ realm['name']|d(realm['type']|d('ldap')) }} for service Keycloak
   uri:
     url: "{{ keycloak_auth_url }}/admin/realms/{{ realm['name']|d('master')|lower|replace(' ','_') }}/components"
     method: POST
+    validate_certs: false
     # src: "{{ keycloak_realm_data_file }}"
     remote_src: no
     body: "{{ json_user_federation | to_json }}"

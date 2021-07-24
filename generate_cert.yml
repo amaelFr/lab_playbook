@@ -1,16 +1,16 @@
 ---
 
-# certutil -R -d /ssl/ -a -g 8192 -s 'CN=keycloak.cat.local'
-# O = KEYCLOAK.CAT.LOCAL, CN = keycloak.cat.local
-# certutil -R -d /ssl/ -a -g 8192 -s 'CN=keycloak.cat.local'
-# O = KEYCLOAK, CN = keycloak.cat.local
-# certutil -R -d /ssl/ -a -g 8192 -s 'CN=keycloak.cat.local'
-# O = CAT.LOCAL, CN = keycloak.cat.local
-# certutil -R -d /ssl/ -a -g 8192 -s 'CN=keycloak.cat.local'
-# CN = keycloak.cat.local
+# certutil -R -d /ssl/ -a -g 8192 -s 'CN=keycloak.{{ domain.name }}'
+# O = KEYCLOAK.{{ domain.name }}, CN = keycloak.{{ domain.name }}
+# certutil -R -d /ssl/ -a -g 8192 -s 'CN=keycloak.{{ domain.name }}'
+# O = KEYCLOAK, CN = keycloak.{{ domain.name }}
+# certutil -R -d /ssl/ -a -g 8192 -s 'CN=keycloak.{{ domain.name }}'
+# O = {{ domain.name }}, CN = keycloak.{{ domain.name }}
+# certutil -R -d /ssl/ -a -g 8192 -s 'CN=keycloak.{{ domain.name }}'
+# CN = keycloak.{{ domain.name }}
 
 
-# ipa cert-request --add --profile-id=caIPAserviceCert --principal=HTTP/keycloak.cat.local --certificate-out=/tmp/ssl/keycloak/certificate.crt.pem
+# ipa cert-request --add --profile-id=caIPAserviceCert --principal=HTTP/keycloak.{{ domain.name }} --certificate-out=/tmp/ssl/keycloak/certificate.crt.pem
 
 
 # https://superuser.com/questions/738612/openssl-ca-keyusage-extension
@@ -18,137 +18,40 @@
 
 
 - hosts:
-  - ipa
+  - domainController
   vars:
     ansible_python_interpreter: /usr/bin/python3
-  tasks:
-
-    - name: Creates directories for certificate
-      file:
-        path: /tmp/ssl/keycloak
-        state: directory
-        # owner: root
-        # group: root
-        mode: 0700
-        recurse: yes
-
-    - name: Generate an OpenSSL private key with the default values (4096 bits, RSA)
-      community.crypto.openssl_privatekey:
-        path: /tmp/ssl/keycloak/private.key.pem
-        passphrase: "{{ key_password|d(omit) }}"
-        size: "{{ key_size|d(omit) }}"
-        type: "{{ key_type|d(omit) }}"
-        force: true
-
-    - name: Generate an OpenSSL Certificate Signing Request
-      community.crypto.openssl_csr:
-        path: /tmp/ssl/keycloak/request.csr.pem
-        privatekey_path: /tmp/ssl/keycloak/private.key.pem
-        common_name: keycloak.cat.local
-        key_usage: "{{ usages|d(omit) }}"
-        # subject_alt_name: "{{ alt_names|d(omit) }}"
-        return_content: true
-      register: csr_out
-
-    - name: Check ipa host
-      community.general.ipa_host:
-        # name: "{{ certificate_host_dns }}"
-        # ns_host_location: keycloak
-        ip_address: 192.168.5.128
-        name: keycloak.cat.local
-        state: present
-        ipa_host: ipa.cat.local
-        ipa_user: admin
-        ipa_pass: V@grant1 
-        validate_certs: false
-      register: certificate_host
-
-    - name: Create kinit ticket
-      shell: echo 'V@grant1' | kinit -l 0:0:10 admin
-
-    - name: Sign certificate request
-      command: >
-        ipa cert-request
-          /tmp/ssl/keycloak/request.csr.pem
-          --add --profile-id=caIPAserviceCert
-          --principal=HOST/keycloak.cat.local
-          --certificate-out=/tmp/ssl/keycloak/certificate.crt.pem
-      register: out
-
-    # - name: Get cookie for service ipa
-    #   uri:
-    #     url: "https://ipa.cat.local/ipa/session/login_password"
-    #     method: POST
-    #     body_format: form-urlencoded
-    #     body:
-    #       user: "admin"
-    #       password: "V@grant1"
-    #     validate_certs: false
-    #     headers:
-    #       Referer: https://ipa.cat.local/ipa/ui/
-    #   register: ipa_token
-
-    # - set_fact:
-    #     certificate_request: |
-    #       {{ {
-    #         "method": "cert_request",
-    #         "params": [
-    #             [
-    #                 csr_out['csr']
-    #             ],
-    #             {
-    #                 "principal": "host/keycloak.cat.local@CAT.LOCAL",
-    #                 "cacn": "ipa",
-    #                 "profile_id": "caIPAserviceCert"
-    #             }
-    #         ]
-    #       } }}
-
-    # - name: Sign certificate request
-    #   uri:
-    #     url: "https://ipa.cat.local/ipa/session/json"
-    #     method: POST
-    #     body: "{{ certificate_request | to_json }}"
-    #     validate_certs: false
-    #     headers:
-    #       Referer: https://ipa.cat.local/ipa/ui/
-    #       Content-type: application/json
-    #       Accept: application/json
-    #       Cookie: "{{ ipa_token['cookies_string'] }}"
-    #   register: ipa_certificate
-
-    # - debug:
-    #     var: ipa_certificate
-    
-    # - name: Creating a file with content
-    #   copy:
-    #     dest: tmp/ssl/keycloak/certificate.crt.pem
-    #     content: "{{ ipa_certificate['json']['result']['result']['certificate'] }}"
-
-    # - name: get IPA service
-    #   freeipa.ansible_freeipa.ipaservice:
-    #     ipaadmin_principal: admin
-    #     ipaadmin_password: V@grant1
-    #     name: HTTP/keycloak.cat.local
-    #     certificate: "{{ [ ipa_certificate['json']['result']['result']['certificate'] ] }}"
-    #     # ip_address: 192.168.5.128
-    #     # name: keycloak.cat.local
-    #     state: present
-    #     host: ipa.cat.local
-    #     # ipa_user: admin
-    #     # ipa_pass: V@grant1 
-    #     # validate_certs: false
-    #   register: certificate_host
-
-    # - debug:
-    #     var: certificate_host
-
-
-    # - freeipa.ansible_freeipa.ipaservice:
-    #     ipaadmin_principal: admin
-    #     ipaadmin_password: V@grant1
-    #     name: HTTP/keycloak.cat.local
-    #     certificate:
-    #       - "{{ csr_out['csr'].split('')[1] }}"
-    #     action: member
-    #     state: present
+  roles:
+    - role: generate_certificate
+      vars:
+        host: ipa
+        domain_name: '{{ domain.name }}'
+        hostname: kibana
+        certificateip: true
+        ip: 192.168.204.128
+        pki: ipa
+    - role: generate_certificate
+      vars:
+        host: ipa
+        domain_name: '{{ domain.name }}'
+        hostname: keycloak
+        certificateip: true
+        ip: 192.168.204.128
+        pki: ipa
+    - role: generate_certificate
+      vars:
+        host: ipa
+        domain_name: '{{ domain.name }}'
+        hostname: elastic
+        certificateip: true
+        ip: 192.168.204.128
+        key_format: pkcs8
+        pki: ipa
+    - role: generate_certificate
+      vars:
+        host: ipa
+        domain_name: '{{ domain.name }}'
+        hostname: wazuh
+        certificateip: true
+        ip: 192.168.204.128
+        pki: ipa

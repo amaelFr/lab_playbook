@@ -1,3 +1,280 @@
 #  <-- tasks file can include smaller files if warranted
 ---
 # file: roles/common/tasks/main.yml
+
+- name: add container to inventory
+  add_host:
+    name: docker-{{ pki }}-pki
+    ansible_host: ipa
+    ansible_connection: docker
+    ansible_docker_extra_args: "{{ '-H=ssh://'+(ansible_user+'@' if ansible_user is defined else '')+ansible_host|d(inventory_hostname)+':'+(ansible_port|d('22')) if ansible_connection=='ssh' else '' }}"
+
+- name: delegate to the container
+  delegate_to: docker-{{ pki }}-pki
+  block:
+    - name: Creates directories for certificate
+      file:
+        path: /tmp/ssl/{{ domain_name }}/{{ hostname }}
+        state: directory
+        # owner: root
+        # group: root
+        mode: 0700
+        recurse: yes
+
+    - name: Generate an OpenSSL private key with the default values (4096 bits, RSA)
+      community.crypto.openssl_privatekey:
+        path: /tmp/ssl/{{ domain_name }}/{{ hostname }}/private.key.pem
+        passphrase: "{{ key_password|d(omit) }}"
+        size: "{{ key_size|d(omit) }}"
+        type: "{{ key_type|d(omit) }}"
+        format: "{{ key_format|d(omit) }}"
+        force: true
+
+    - name: Generate an OpenSSL Certificate Signing Request
+      community.crypto.openssl_csr:
+        path: /tmp/ssl/{{ domain_name }}/{{ hostname }}/request.csr.pem
+        privatekey_path: /tmp/ssl/{{ domain_name }}/{{ hostname }}/private.key.pem
+        common_name: '{{ hostname }}.{{ domain_name }}'
+        # common_name: '{{ host }}.{{ domain_name }}'
+        # subject_alt_name: DNS:{{ host }}.{{ domain_name }},DNS:{{ hostname }}.{{ domain_name }}
+        key_usage: "{{ usages|d(omit) }}"
+        # subject_alt_name: "{{ 'IP:'+ip if certificateip|d(omit)}}"
+        return_content: true
+      register: csr_out
+
+    - name: Check ipa host
+      community.general.ipa_host:
+        # name: "{{ certificate_host_dns }}"
+        # ns_host_location: keycloak
+        ip_address: '{{ ip }}'
+        name: '{{ host }}.{{ domain_name }}'
+        state: present
+        ipa_host: '{{ pki }}.{{ domain_name }}'
+        ipa_user: admin
+        ipa_pass: V@grant1 
+        validate_certs: false
+      register: certificate_host
+
+    - name: Get ipa host
+      freeipa.ansible_freeipa.ipahost:
+        ipaadmin_password: V@grant1
+        name: '{{ host }}.{{ domain_name }}'
+        principal: "{{ certificate_host['host']['krbprincipalname'] + ['host/'+hostname+'.'+domain_name] }}"
+      register: certificate_host
+
+    # - name: Check ipa host
+    #   community.general.ipa_host:
+    #     # name: "{{ certificate_host_dns }}"
+    #     # ns_host_location: keycloak
+    #     ip_address: '{{ ip }}'
+    #     name: {{ pki }}.{{ domain_name }}
+    #     state: present
+    #     ipa_host: {{ pki }}.{{ domain_name }}
+    #     ipa_user: admin
+    #     ipa_pass: V@grant1 
+    #     validate_certs: false
+    #   register: certificate_host
+    # - name: Check ipa host principal
+    #   community.general.ipa_host:
+    #     # name: "{{ certificate_host_dns }}"
+    #     # ns_host_location: keycloak
+    #     ip_address: '{{ ip }}'
+    #     name: {{ pki }}.{{ domain_name }}
+    #     # 
+    #     state: present
+    #     ipa_host: {{ pki }}.{{ domain_name }}
+    #     ipa_user: admin
+    #     ipa_pass: V@grant1 
+    #     validate_certs: false
+    #   register: certificate_host
+    
+    - name: Check or add dns entry
+      ipa_dnsrecord:
+        ipa_host: '{{ pki }}.{{ domain_name }}'
+        ipa_pass: V@grant1
+        state: present
+        zone_name: "{{ domain_name }}"
+        record_name: '{{ hostname }}'
+        record_type: A
+        record_value: '{{ ip }}'
+
+    - name: Create kinit ticket
+      shell: echo 'V@grant1' | kinit -l 0:0:10 admin
+    # openssl req -text -noout -verify -in /tmp/ssl/{{ domain_name }}/{{ hostname }}/request.csr.pem
+    - name: Sign certificate request
+      command: >
+        ipa cert-request
+          /tmp/ssl/{{ domain_name }}/{{ hostname }}/request.csr.pem
+          --profile-id=caIPAserviceCert
+          --principal=host/{{ hostname }}.{{ domain_name }}
+          --certificate-out=/tmp/ssl/{{ domain_name }}/{{ hostname }}/certificate.crt.pem
+      register: out
+    - name: extract certificate from file
+      slurp:
+        src: /tmp/ssl/{{ domain_name }}/{{ hostname }}/certificate.crt.pem
+      register: cert_file
+    - set_fact:
+        gen_cert: "{{ cert_file['content'] | b64decode | replace('\n', '') | replace('-----BEGIN CERTIFICATE-----', '') | replace('-----END CERTIFICATE-----', '')  }}"
+    - name: Get cookie for service ipa
+      uri:
+        url: "https://{{ pki }}.{{ domain_name }}/ipa/session/login_password"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          user: "admin"
+          password: "V@grant1"
+        validate_certs: false
+        headers:
+          Referer: https://{{ pki }}.{{ domain_name }}/ipa/ui/
+      register: ipa_token
+
+
+    # - set_fact:
+    #     add_certificate_request: |
+    #       {{ {
+    #         "method": "cert_request",
+    #         "params": [
+    #             [
+    #                 csr_out['csr']
+    #             ],
+    #             {
+    #                 "principal": "host/{{ hostname }}.{{ domain_name }}@{{ domain_name|upper }}",
+    #                 "cacn": "ipa",
+    #                 "profile_id": "caIPAserviceCert"
+    #             }
+    #         ]
+    #       } }}
+    # - name: Sign certificate request
+    #   uri:
+    #     url: "https://{{ pki }}.{{ domain_name }}/ipa/session/json"
+    #     method: POST
+    #     body: "{{ add_certificate_request | to_json }}"
+    #     validate_certs: false
+    #     headers:
+    #       Referer: https://{{ pki }}.{{ domain_name }}/ipa/ui/
+    #       Content-type: application/json
+    #       Accept: application/json
+    #       Cookie: "{{ ipa_token['cookies_string'] }}"
+    #   register: ipa_certificate
+    #   failed_when: ipa_certificate['json']['error']
+    # - debug:
+    #     var: ipa_certificate
+    # - name: Creating a file with content
+    #   copy:
+    #     dest: /tmp/ssl/{{ domain_name }}/{{ hostname }}/certificate.crt.pem
+    #     content: |
+    #       -----BEGIN CERT-----
+    #       {{ ipa_certificate['json']['result']['result']['certificate'] }}
+    #       -----END CERT-----
+    # [ipa_certificate['json']['result']['result']['certificate'][i:i+n] for i in range(0, len(ipa_certificate['json']['result']['result']['certificate']), 65)]
+    # - name: get IPA service
+    #   freeipa.ansible_freeipa.ipaservice:
+    #     ipaadmin_principal: admin
+    #     ipaadmin_password: V@grant1
+    #     name: HTTP/keycloak.{{ domain_name }}
+    #     certificate: "{{ [ ipa_certificate['json']['result']['result']['certificate'] ] }}"
+    #     # ip_address: 192.168.5.128
+    #     # name: keycloak.{{ domain_name }}
+    #     state: present
+    #     host: {{ pki }}.{{ domain_name }}
+    #     # ipa_user: admin
+    #     # ipa_pass: V@grant1 
+    #     # validate_certs: false
+    #   register: certificate_host
+    # - set_fact:
+    #       gen_cert: "{{ ipa_certificate['json']['result']['result']['certificate'] }}"
+
+
+    - name: Create Service if not existing
+      ipa_service:
+        name: http/{{ host }}.{{ domain_name }}
+        state: present
+        ipa_host: "{{ pki }}.{{ domain_name }}"
+        ipa_user: admin
+        ipa_pass: V@grant1
+      register: out
+      failed_when: out.changed==false and "\"http/{{ host }}.{{ domain_name }}@{{ domain_name|upper }}\" already exists" not in out.msg
+    
+
+    - set_fact:
+        get_service_certificate_request: |
+          {{ {
+            "method": "batch",
+            "params": [
+              [
+                {
+                  "method": "cert_find",
+                  "params": [
+                    [],
+                    {
+                      "service": [
+                        "HTTP/{{ host }}.{{ domain_name }}@{{ domain_name|upper }}"
+                      ],
+                      "all": true
+                    }
+                  ]
+                }
+              ],
+              {
+                  "version": "2.239"
+              }
+            ]
+          } }}
+    - name: Get certificate for service
+      uri:
+        url: "https://{{ pki }}.{{ domain_name }}/ipa/session/json"
+        method: POST
+        body: "{{ get_service_certificate_request | to_json }}"
+        validate_certs: false
+        headers:
+          Referer: https://{{ pki }}.{{ domain_name }}/ipa/ui/
+          Content-type: application/json
+          Accept: application/json
+          Cookie: "{{ ipa_token['cookies_string'] }}"
+      register: ipa_service_certificate
+
+
+    - set_fact:
+        service_certificate_list: "{{ [ gen_cert ] }}"
+    - set_fact:
+        service_certificate_list: "{{ service_certificate_list+[item['certificate']] }}"
+      with_items: "{{ ipa_service_certificate['json']['result']['results'][0]['result'] }}"
+
+    # - debug:
+    #     var: service_certificate_list
+    
+    - freeipa.ansible_freeipa.ipaservice:
+        ipaadmin_principal: admin
+        ipaadmin_password: V@grant1
+        # host: "{{ pki }}.{{ domain_name }}"
+        name: HTTP/{{ host }}.{{ domain_name }}
+        certificate: "{{ service_certificate_list  }}"
+        action: member
+        state: present
+
+
+    - name: Creates directories for certificate
+      local_action:
+        module: file
+        path: "{{ inventory_dir }}/tmp/ssl/{{ domain_name }}/{{ hostname }}/"
+        state: directory
+    - name: use find to get the files list which you want to copy/fetch
+      find: 
+        paths: /tmp/ssl/{{ domain_name }}/{{ hostname }}
+      register: files_fetch
+    - name: use fetch to get the files
+      fetch:
+        flat: true
+        src: "{{ item.path }}"
+        dest: /{{ inventory_dir }}/tmp/ssl/{{ domain_name }}/{{ hostname }}/
+      with_items: "{{ files_fetch.files }}"
+    - name: use fetch to get the files
+      fetch:
+        flat: true
+        src: /data/etc/ipa/ca.crt
+        dest: /{{ inventory_dir }}/tmp/ssl/{{ domain_name }}/{{ hostname }}/root-ca.crt.pem
+    
+    - name: Creates directories for certificate
+      file:
+        path: /tmp/ssl/{{ domain_name }}/{{ hostname }}
+        state: absent

@@ -11,6 +11,8 @@
 #         files:
 #           - keycloak/docker-compose.yml
 #           - ipa/docker-compose.yml
+#         down_stack: False
+#         remove_artifcat: True
 #         command_before_build:
 #         command_on_build:
 #         command_build:
@@ -29,13 +31,35 @@
 #           envvar: value
 #           envvar1: value
 
-
-
+- name: Install docker-compose
+  become: true
+  block:
+    - name: Install dependencies
+      apt:
+        name:
+          - "{{ ansible_python_interpreter|d('python')|basename }}"
+          - "{{ ansible_python_interpreter|d('python')|basename }}-pip"
+          - "{{ ansible_python_interpreter|d('python')|basename }}-setuptools"
+        state: latest
+        update_cache: True
+    - name: Install docker-compose package
+      pip:
+        name: docker-compose
+        state: latest
+        executable: "pip{{ ansible_python_interpreter|d('')|basename| replace('python','')}}"
+  when: ansible_facts['os_family'] == "Debian"
 
 - name: Error if windows OS
   when: ansible_facts['os_family'] == 'Windows'
   fail:
     msg: "Error the following role will only work for non windows system"
+
+- name: "adding existing user {{ ansible_user }} to group docker"
+  become: true
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes
 
 # Check and set variables
 - import_tasks: vars.yml
@@ -53,13 +77,15 @@
     - name: Delete last stack
       block:
         - name: "{{ command_down|d('docker-compose -p '+name+' '+files+' down --remove-orphans --volumes #--rmi all') }}"
-          command: "{{ command_down|d('docker-compose -p '+name+' '+files+' down --remove-orphans --volumes #--rmi all') }}"
+          # command: "{{ command_down|d('docker-compose -p '+name+' '+files+' down --remove-orphans --volumes') }}"
+          command: "{{ command_down|d('docker-compose -p '+name+' '+files+' down --remove-orphans --volumes --rmi all') }}"
           args:
             chdir: ~/docker-stack-{{name}}
         - name: "{{ command_clean|d('docker-compose -p '+name+' '+files+' rm -f -v') }}"
           command: "{{ command_clean|d('docker-compose -p '+name+' '+files+' rm -f -v') }}"
           args:
             chdir: ~/docker-stack-{{name}}
+      when: down_stack|d(True)
 
     - name: "Command before build stack: {{ item }}"
       command: "{{ item }}"
@@ -79,19 +105,16 @@
       loop: "{{ command_before_start }}"
 
     - name: "Start stack: {{ command_on_start|join(' && ') }}"
-      debug:
-        msg: "{{ command_on_start|join(' && ') }}"
-    #   command: "{{ command_on_start|join(' && ') }}"
-    #   args:
-    #     chdir: ~/docker-stack-{{name}}
+      command: "{{ command_on_start|join(' && ') }}"
+      args:
+        chdir: ~/docker-stack-{{name}}
 
-# - name: Command after start stack
-#   include_tasks: command.yml
-#   loop: "{{ command_after_start }}"
+    - name: Command after start stack
+      include_tasks: command.yml
+      loop: "{{ command_after_start }}"
 
-
-
-# - name: Clean artifact path
-#   file:
-#     state: absent
-#     path: ~/docker-stack-{{name}}
+- name: Clean artifact path
+  file:
+    state: absent
+    path: ~/docker-stack-{{name}}
+  when: remove_artifact|d(False)

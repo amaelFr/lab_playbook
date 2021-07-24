@@ -2,15 +2,16 @@
 collections:
   ## SetIP
   - pfsensible.core
-  - linux-system-roles.network #EL like
+  # - linux-system-roles.network #EL like
 
   ## firewall
-  - pfsensible.core
 
   ## AD 
   - amtega.win_domain_ous #OrganizationalUnits
 
   - freeipa.ansible_freeipa
+
+  - scicore.guacamole
 
   # - crivetimihai.virtualization
   # - inverse_inc.windows

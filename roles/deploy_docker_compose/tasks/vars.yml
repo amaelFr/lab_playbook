@@ -15,13 +15,13 @@
 
 - name: Set required variables
   block:
-    - block: # Set files variable
+    - block:
         - set_fact:
             files: -f {{ files }}
           when: ( files is defined ) and ( files is string )
         - set_fact:
-            files: -f {{ files | join(' -f ') }}
-          when: ( files is defined ) and ( files is not mapping ) and ( files is iterable ) and ( files is not string )
+            files: "-f {{ files | join(' -f ') }}"
+          when: files is defined and files is not mapping and files is iterable and files is not string
         - set_fact:
             files: ""
           when: files is not defined
@@ -38,7 +38,7 @@
           when: ( command_on_build is defined ) and ( command_on_build is string )
         - set_fact:
             command_on_build: []
-          when: command_on_build is not defined
+          when: command_on_build is not defined        
         - set_fact:
             command_on_build: "{{ command_on_build + [ command_build|d('docker-compose -p '+name+' '+files+' build --pull --parallel') ] }}"
     - block: # Set command_before_start variable
@@ -56,7 +56,8 @@
             command_on_start: []
           when: command_on_start is not defined
         - set_fact:
-            command_on_start: "{{ command_on_start + [ command_start|d('docker-compose -p '+name+' '+files+' up --detach # --remove-orphans --renew-anon-volumes') ] }}"
+            command_on_start: "{{ command_on_start + [ command_start|d('docker-compose -p '+name+' '+files+' up --detach') ] }}"
+            # command_on_start: "{{ command_on_start + [ command_start|d('docker-compose -p '+name+' '+files+' up --detach --remove-orphans --renew-anon-volumes') ] }}"
     - block: # Set command_after_start variable
         - set_fact:
             command_after_start: "{{ [ { 'destination':'local', 'command': command_after_start } ] }}"

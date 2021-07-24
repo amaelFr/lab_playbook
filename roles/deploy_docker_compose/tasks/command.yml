@@ -5,6 +5,15 @@
     chdir: ~/docker-stack-{{name}}
   when: item is string or 'destination' not in item or item['destination']=="local" or item['destination']=="machine"
 - name: execute container command
-  fail:
-    msg: docker compose exec must be implemented
+  block:
+    - name: add container to inventory
+      add_host:
+        name: docker-{{ inventory_hostname }}-{{ item['destination'] }}
+        ansible_host: "{{ item['destination'] }}"
+        ansible_user: "{{ item['user']|d(omit) }}"
+        ansible_connection: docker
+        ansible_docker_extra_args: "{{ '-H=ssh://'+(ansible_user+'@' if ansible_user is defined else '')+ansible_host|d(inventory_hostname)+':'+(ansible_port|d('22')) if ansible_connection=='ssh' else '' }}"
+    - name: Run command inside container
+      delegate_to: docker-{{ inventory_hostname }}-{{ item['destination'] }}
+      raw: "{{ item['command'] }}"
   when: item is not string and 'destination' in item and item['destination']!="local" and item['destination']!="machine"

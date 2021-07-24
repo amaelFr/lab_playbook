@@ -3,6 +3,7 @@
   uri:
     url: "{{ keycloak_auth_url }}/realms/{{ keycloak_auth_realm }}/protocol/openid-connect/token"
     method: POST
+    validate_certs: false
     body_format: form-urlencoded
     body:
       username: "{{ keycloak_user }}"
@@ -15,6 +16,7 @@
   uri:
     url: "{{ keycloak_auth_url }}/admin/realms/{{ realm['name']|d('master')|lower|replace(' ','_') }}"
     method: GET
+    validate_certs: false
     status_code:
      - 200
      - 404
@@ -52,6 +54,7 @@
   uri:
     url: "{{ keycloak_auth_url }}/admin/realms"
     method: POST
+    validate_certs: false
     # src: "{{ keycloak_realm_data_file }}"
     remote_src: no
     body: "{{ json_realm | to_json }}"
@@ -73,10 +76,10 @@
 #     password: keycloak
 #     state : present
 
-# - name: Loop throw realm userfederation
-#   include_tasks: userFederation.yml
-#   loop: "{{ realm['user_federation'] }}"
-#   loop_control:
-#     loop_var: user_federation
-#   when: realm['user_federation']|d(False)
+- name: Loop throw realm userfederation
+  include_tasks: userFederation.yml
+  loop: "{{ realm['user_federation'] }}"
+  loop_control:
+    loop_var: user_federation
+  when: realm['user_federation']|d(False)
 

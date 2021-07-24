@@ -6,9 +6,9 @@
 #     - firewall
 #   gather_facts: no
 
-- hosts: AD
-  roles:
-    - AD
+# - hosts: AD
+#   roles:
+#     - AD
 
 # - import_playbook: subPlaybook/setDNS.yml
 
@@ -25,11 +25,11 @@
 #   roles:
 #     - file_folder
 
-- hosts: all
-  tasks:
-    - name: fileshare
-      include_role:
-        name: fileshare
+# - hosts: all
+#   tasks:
+#     - name: fileshare
+#       include_role:
+#         name: fileshare
 
 # - hosts: logging
 #   roles:

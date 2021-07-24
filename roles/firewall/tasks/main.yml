@@ -3,10 +3,10 @@
 - name: PrepareAlias variable
   block:
     - set_fact:
-        firewall_rules_to_set: "{{ aliases }}"
+        firewall_aliases_to_set: "{{ aliases }}"
       when: aliases[0] is mapping
     - set_fact:
-        firewall_rules_to_set: "{{ firewall_aliases_to_set|d([]) + lookup('vars', alias)|d([]) }}"
+        firewall_aliases_to_set: "{{ firewall_aliases_to_set|d([]) + lookup('vars', alias)|d([]) }}"
       loop: "{{ aliases  }}"
       loop_control:
         loop_var: alias
@@ -16,13 +16,13 @@
 - name: PrepareNAT variable
   block:
     - set_fact:
-        firewall_rules_to_set: "{{ NATs }}"
+        firewall_NATs_to_set: "{{ NATs }}"
       when: NATs[0] is mapping
     - set_fact:
-        firewall_rules_to_set: "{{ firewall_NATs_to_set|d([]) + lookup('vars', nat)|d([]) }}"
+        firewall_NATs_to_set: "{{ firewall_NATs_to_set|d([]) + lookup('vars', nat)|d([]) }}"
       loop: "{{ NATs  }}"
       loop_control:
-        loop_var: rule
+        loop_var: nat
       when: NATs[0] is string
   when: NATs|d([])|length>0
 
@@ -46,17 +46,22 @@
         descr: 'NAT outbound traffic'
         state: absent
     - name: Create Pfsense alias
-      include: setpfsenseAlias.yml
+      # include: ./setpfsenseAlias.yml
+      include_tasks: setPfsenseAlias.yml
       loop: "{{ firewall_aliases_to_set }}"
       loop_control:
         loop_var: alias
+      when: "{{ firewall_aliases_to_set|d(False) }}"
     - name: Create pfsense NATs
-      include: setPfsenseNat.yml
+      # include: setPfsenseNat.yml
+      include_tasks: setPfsenseNat.yml
       loop: "{{ firewall_NATs_to_set }}"
       loop_control:
         loop_var: nat
+      when: "{{ firewall_NATs_to_set|d(False) }}"
     - name: Create pfsense rules
-      include: setPfsenseRule.yml
+      # include: setPfsenseRule.yml
+      include_tasks: setPfsenseRule.yml
       loop: "{{ firewall_rules_to_set }}"
       loop_control:
         loop_var: rule

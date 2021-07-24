@@ -1,23 +1,77 @@
 ---
 - hosts:
     - keycloak
+  pre_tasks:
+    - name: Get certificate
+      copy:
+        src: /{{ inventory_dir }}/tmp/ssl/{{ domain.name }}/keycloak/
+        dest: ~/ssl/keycloak/
+  roles:
+    - role: deploy_docker_compose
+      vars:
+        src: ~/documents/enterprise_tools/
+        name: keycloak
+        files:
+          # - keycloak/docker-compose.yml
+          - keycloak/docker-compose.yml
+          #- keycloak/docker-compose.HTTP.yml
+          - keycloak/docker-compose.HTTPS.yml
+          - keycloak/docker-compose.first_start.yml
+        command_before_build:
+          - cp ~/ssl/keycloak/certificate.crt.pem ~/ssl/keycloak/tls.crt
+          - cp ~/ssl/keycloak/private.key.pem ~/ssl/keycloak/tls.key
+          - cp ~/ssl/keycloak/root-ca.crt.pem ~/ssl/keycloak/root-ca.crt
+        # command_on_build: ok
+        # command_build: ok
+        # command_before_start: ok
+        # command_on_start: ok
+        # command_start: ok
+        command_after_start:
+          - destination: keycloak
+            user: root
+            command: echo "192.168.204.128 ipa.{{ domain.name }}" >> /etc/hosts
+        # command_down: ok
+        # command_clean: ok
+        command_environment:
+          KEYCLOAK_X509_CA_BUNDLE: /etc/x509/https/root-ca.crt
+          DOMAIN: "{{ domain.name }}"
+          KEYCLOAK_CERT_SOURCE: ~/ssl/keycloak
+          KEYCLOAK_INTERFACE: 192.168.204.128
+          KEYCLOAK_HTTPS_PORT: 8443
+  post_tasks:
+    - name: Pause play until a URL is reachable from this host
+      uri:
+        url: "https://192.168.204.128:8443/auth/"
+        method: GET
+        validate_certs: false
+      register: _result
+      until: _result.status == 200
+      retries: 30
+      delay: 5 # Every 5 seconds
+
+
+# keystore 
+# /opt/jboss/keycloak/standalone/configuration/keystores/https-keystore.jks
+
+- hosts:
+    - keycloak
   roles:
     - role: keycloak
       vars:
         keycloak_user: keycloak
         keycloak_password: keycloak
         # keycloak_auth_client: admin-cli
-        keycloak_auth_url: http://{{ansible_host}}:8080/
+        keycloak_auth_url: https://192.168.204.128:8443/auth
         # keycloak_auth_realm: master
         keycloak_realm:
           # - name: test
-          - name: thatistest
+          - name: IT
             user_federation:
-              - name: testtldap
+              - name: ldap_group_IT
                 # type: ldap/kerberos
-                connectionServer: ldap://ipa
-                usersDn: cn=users,cn=accounts,dc=cat,dc=local
-                bindDn: uid=admin,cn=users,cn=accounts,dc=cat,dc=local
+                connectionServer: ldaps://ipa.{{ domain.name }}
+                usersDn: cn=users,cn=accounts,dc={{ domain.name.split('.')|join(',dc=') }}
+                bindDn: uid=admin,cn=users,cn=accounts,dc={{ domain.name.split('.')|join(',dc=') }}
                 bindCredential: V@grant1
 
         #   - name: def master
@@ -30,14 +84,6 @@
         #     authentication: def [{}, str]
         #     groups: def [{},str]
         #     users: def [{},str]
-
-
-
-
-
-
-
-
 
 
 
